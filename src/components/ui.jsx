@@ -38,11 +38,11 @@ export function CountUp({ value, format, duration = 1100 }) {
   return <span ref={ref}>{format(v)}</span>;
 }
 
-export function Kpi({ label, value, format, sub, accent, icon }) {
+export function Kpi({ label, value, format, sub, accent, icon, featured = false }) {
   return (
-    <div className="kpi" style={{ '--accent': accent }}>
+    <div className={featured ? 'kpi kpi-featured' : 'kpi'} style={{ '--accent': accent }}>
       <div className="kpi-label">{icon}{label}</div>
-      <div className="kpi-value"><CountUp value={value} format={format} /></div>
+      <div className="kpi-value">{featured ? format(value) : <CountUp value={value} format={format} />}</div>
       {sub && <div className="kpi-sub">{sub}</div>}
     </div>
   );

@@ -26,6 +26,14 @@ const cell = (list, f) => {
   return s;
 };
 
+function DatasetLinks() {
+  return <div className="dataset-links">
+    <span>Full study data · {num(STUDENTS.length)} student records</span>
+    <a className="dataset-download" href="data/student_dropout_decoded.csv" download>Download CSV <span aria-hidden="true">↓</span></a>
+    <a href="https://archive.ics.uci.edu/dataset/697/predict+students+dropout+and+academic+success" target="_blank" rel="noreferrer">View UCI source <span aria-hidden="true">↗</span></a>
+  </div>;
+}
+
 export default function App() {
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [theme, setTheme] = useState(() => {
@@ -119,6 +127,19 @@ export default function App() {
   }
   const filterNote = Object.values(filters).some((v) => v !== 'All') ? ' (current filter)' : '';
 
+  const outcomeCards = (
+    <div className="kpis wide" role="group" aria-label="Outcomes in the selected cohort">
+      <Kpi featured icon={<GraduationCap/>} label="Graduation rate" value={S.gradRate} format={pct}
+        sub={`${num(S.graduates)} of ${num(S.n)} students`} accent="var(--grad)" />
+      <Kpi featured label="Dropout rate" value={S.dropRate} format={pct}
+        sub={`${num(S.dropouts)} of ${num(S.n)} students`} accent="var(--drop)" />
+      <Kpi label="Students" value={S.n} format={v => num(Math.round(v))} sub="in selected cohort" />
+      <Kpi label="Still enrolled" value={S.enrRate} format={pct} sub={`${num(S.enrolled)} students`} />
+      <Kpi label="Dropouts" value={S.dropouts} format={v => num(Math.round(v))}
+        sub={`Rate 95% CI ${pct(S.ci[0])}–${pct(S.ci[1])}`} />
+    </div>
+  );
+
   return (
     <>
       <a href="#main" className="skip">Skip to content</a>
@@ -161,13 +182,14 @@ export default function App() {
             </div>
             <div className="cover-actions">
               <button className="cover-action" onClick={() => go('roles')}>Choose your role <span aria-hidden="true">↓</span></button>
-              <button className="cover-action cover-secondary" onClick={() => go('overview')}>Explore student outcomes <span aria-hidden="true">→</span></button>
+              <button className="cover-action cover-secondary" onClick={() => go('overview')}>View outcomes <span aria-hidden="true">→</span></button>
             </div>
           </div>
           <div className="cover-art" aria-hidden="true"><div className="record"/><img className="cover-mascot" src="varsity-bear.webp" alt="" width="760" height="760" fetchPriority="high"/></div>
         </div>
       </section>
       <div className="source-line"><span>Study cohort</span><b>{num(all.n)} students</b><i/>One Portuguese institution<i/>2008/09–2018/19</div>
+      {page === 'workspace' && <div className="landing-outcomes">{S.n ? outcomeCards : <p className="empty-report">No students match the selected filters.</p>}</div>}
       <RolePicker role={page==='workspace' ? role : null} onSelect={chooseRole}/>
       <FilterBar
         filters={filters}
@@ -181,15 +203,10 @@ export default function App() {
       <main id="main">
         {page==='workspace' ? <Workspace role={role} list={list} groups={G} summary={S} onExplore={go}/> : <>
         <nav className="explorer-nav" aria-label="Evidence sections">{NAV.map(([id,label])=><button key={id} onClick={()=>go(id)}>{label}</button>)}</nav>
-        {!S.n ? <p className="empty-report" role="status">No students match these filters. Reset the filters to compare outcomes.</p> : <>
+        {!S.n ? <div id="overview"><p className="empty-report" role="status">No students match these filters. Reset the filters to compare outcomes.</p><DatasetLinks/></div> : <>
         <Section id="overview" kicker="01 · The problem" title="Student outcomes in the selected cohort" intro="Outcomes are recorded at the end of each student's normal program length. 'Enrolled' means the student was still studying, which is neither a graduation nor a dropout.">
-          <div className="kpis wide">
-            <Kpi label="Students" value={S.n} format={(v) => num(Math.round(v))} sub={filterNote ? 'in current selection' : 'enrolled 2008–2019 cohorts'} accent="var(--ink-2)" />
-            <Kpi label="Dropout rate" value={S.dropRate} format={(v) => pct(v)} sub={S.n ? `95% CI ${pct(S.ci[0])}–${pct(S.ci[1])}` : '–'} accent="var(--drop)" />
-            <Kpi icon={<GraduationCap/>} label="Graduation rate" value={S.gradRate} format={(v) => pct(v)} sub={`${num(S.graduates)} graduates`} accent="var(--grad)" />
-            <Kpi label="Still enrolled" value={S.enrRate} format={(v) => pct(v)} sub={`${num(S.enrolled)} unresolved`} accent="var(--enr)" />
-            <Kpi label="Dropouts" value={S.dropouts} format={(v) => num(Math.round(v))} sub="recorded departures" accent="var(--drop)" />
-          </div>
+          {outcomeCards}
+          <div className="wide"><DatasetLinks/></div>
           <Card
             title={`Student outcomes${filterNote}`}
             takeaway={`${pct(S.dropRate)} dropped out and ${pct(S.gradRate)} graduated.`}
@@ -362,13 +379,13 @@ export default function App() {
         </Section>
 
         <Section id="methods" kicker="08 · Transparency" title="Data, methods, and limitations">
+          <div className="wide"><DatasetLinks/></div>
           <Card title="Data source">
             <ul className="plain">
               <li><b>Dataset:</b> Predict Students' Dropout and Academic Success, UCI Machine Learning Repository. <a href="https://doi.org/10.24432/C5MC89" target="_blank" rel="noreferrer">DOI 10.24432/C5MC89</a>. Decoded and adapted under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.</li>
               <li><b>Paper:</b> Realinho, V., Machado, J., Baptista, L., &amp; Martins, M. V. (2022). <i>Data</i>, 7(11), 146. <a href="https://doi.org/10.3390/data7110146" target="_blank" rel="noreferrer">DOI 10.3390/data7110146</a></li>
               <li><b>Unit:</b> one row per student ({num(all.n)} students), from one Portuguese higher-education institution, academic years 2008/09 to 2018/19.</li>
               <li><b>Collected from:</b> the institution's academic and administrative records, plus national macroeconomic data.</li>
-              <li><a href="data/student_dropout_decoded.csv" download>Download the decoded CSV</a> used by this dashboard.</li>
             </ul>
           </Card>
           <Card title="Preparation and definitions">
