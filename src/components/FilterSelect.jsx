@@ -1,7 +1,7 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
-export default function FilterSelect({ label, allLabel, value, options, optionLabels = {}, onChange }) {
+export default function FilterSelect({ label, value, options, optionLabels = {}, onChange }) {
   const id = useId();
   const trigger = useRef(null);
   const menu = useRef(null);
@@ -10,7 +10,8 @@ export default function FilterSelect({ label, allLabel, value, options, optionLa
   const [cursor, setCursor] = useState(0);
   const [position, setPosition] = useState({});
   const choices = ['All', ...options];
-  const caption = key => key === 'All' ? allLabel : optionLabels[key] ?? key;
+  const defaultLabel = options.length === 2 ? 'Both' : 'All';
+  const caption = key => key === 'All' ? defaultLabel : optionLabels[key] ?? key;
 
   useLayoutEffect(() => {
     if (!open) return;

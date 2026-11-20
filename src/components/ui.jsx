@@ -100,17 +100,17 @@ export function FilterBar({ filters, setFilters, defaults, options, n, total }) 
           Cohort filters{active ? ` · ${active}` : ''}
         </button>
         <div className="fb-fields">
-          <Select label="Academic program" allLabel="Across programs" value={filters.course}
+          <Select label="Academic program" value={filters.course}
             options={options.courses} onChange={set('course')} />
-          <Select label="Recorded gender" allLabel="Across genders" value={filters.gender}
+          <Select label="Recorded gender" value={filters.gender}
             options={['Female', 'Male']} optionLabels={{ Female: 'Female students', Male: 'Male students' }} onChange={set('gender')} />
-          <Select label="Age at enrollment" allLabel="Any entry age" value={filters.age}
+          <Select label="Age at enrollment" value={filters.age}
             options={options.ages} optionLabels={{ 'Under 21': 'Under 21 years', '21–24': '21–24 years', '25–34': '25–34 years', '35+': '35 years or older' }} onChange={set('age')} />
-          <Select label="Scholarship status" allLabel="Any award status" value={filters.scholar}
+          <Select label="Scholarship status" value={filters.scholar}
             options={['Yes', 'No']} optionLabels={{ Yes: 'With a scholarship', No: 'No scholarship' }} onChange={set('scholar')} />
-          <Select label="Tuition payment" allLabel="Any payment status" value={filters.tuition}
+          <Select label="Tuition payment" value={filters.tuition}
             options={['Up to date', 'Not up to date']} optionLabels={{ 'Up to date': 'Tuition current', 'Not up to date': 'Tuition behind' }} onChange={set('tuition')} />
-          <Select label="Class schedule" allLabel="Day or evening" value={filters.attendance}
+          <Select label="Class schedule" value={filters.attendance}
             options={['Daytime', 'Evening']} optionLabels={{ Daytime: 'Daytime classes', Evening: 'Evening classes' }} onChange={set('attendance')} />
         </div>
         <div className="fb-status">
