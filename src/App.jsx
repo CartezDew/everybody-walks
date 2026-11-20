@@ -66,8 +66,8 @@ export default function App() {
     const displaced = groupRates(list, (s) => s.displaced, [1, 0], ['Displaced (moved for study)', 'Not displaced']);
     const courses = groupRates(list, (s) => s.courseName, COURSES, COURSES);
     const coursesAll = groupRates(applyFilters(STUDENTS, { ...filters, course: 'All' }), (s) => s.courseName, COURSES, COURSES);
-    const appTop = APP_MODES.slice(0, 7);
-    const app = groupRates(list, (s) => APP_MODES[s.appMode], appTop).sort((a, b) => b.dropRate - a.dropRate);
+    const app = groupRates(list, s => APP_MODES[s.appMode], APP_MODES)
+      .filter(row => row.n > 0).sort((a, b) => b.n - a.n).slice(0, 7);
     const marital = groupRates(list, (s) => s.marital, MARITAL.map((_, i) => i), MARITAL);
     const special = groupRates(list, (s) => s.special, [1, 0], ['Special educational needs', 'No special needs']);
     const intl = groupRates(list, (s) => s.intl, [1, 0], ['International', 'Domestic']);
@@ -94,7 +94,7 @@ export default function App() {
     const traj = pCols.map(([rf]) => [cell(list, (s) => rf(s) && low2(s)), cell(list, (s) => rf(s) && s.pass2 !== null && s.pass2 >= 0.5)]);
 
     // grade distortion
-    const mean = (a) => (a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0);
+    const mean = (a) => (a.length ? a.reduce((x, y) => x + y, 0) / a.length : null);
     const grades = [0, 1, 2].map((t) => {
       const g = list.filter((s) => s.target === t).map((s) => s.g1);
       return { outcome: OUTCOME_NAMES[t], withZero: mean(g), noZero: mean(g.filter((v) => v > 0)), zeros: g.filter((v) => v === 0).length, n: g.length };
@@ -176,6 +176,7 @@ export default function App() {
       <main id="main">
         {page==='workspace' ? <Workspace role={role} list={list} groups={G} summary={S} onExplore={go}/> : <>
         <nav className="explorer-nav" aria-label="Evidence sections">{NAV.map(([id,label])=><button key={id} onClick={()=>go(id)}>{label}</button>)}</nav>
+        {!S.n ? <p className="empty-report" role="status">No students match these filters. Reset the filters to compare outcomes.</p> : <>
         <Section id="overview" kicker="01 · The problem" title="Student outcomes in the selected cohort" intro="Outcomes are recorded at the end of each student's normal program length. 'Enrolled' means the student was still studying, which is neither a graduation nor a dropout.">
           <div className="kpis wide">
             <Kpi label="Students" value={S.n} format={(v) => num(Math.round(v))} sub={filterNote ? 'in current selection' : 'enrolled 2008–2019 cohorts'} accent="var(--ink-2)" />
@@ -211,13 +212,13 @@ export default function App() {
           </Card>
         </Section>
 
-        <Section id="money" kicker="02 · Main story" title="How do outcomes vary with financial strain?" intro="Three financial fields the university already records each show a large gap in dropout rates.">
+        <Section id="money" kicker="02 · Main story" title="How do outcomes vary with financial strain?" intro="Compare recorded outcomes within each tuition, scholarship, and debt group. The filters set the students included in each comparison.">
           <Card
             wide
             title="Dropout rate by tuition status"
             takeaway={G.tuition[0].n && G.tuition[1].n ? `Students behind on tuition dropped out at ${pct(G.tuition[0].dropRate)} compared with ${pct(G.tuition[1].dropRate)} for students whose tuition was current.` : 'Not enough students in both groups for this selection.'}
-            table={{ rows: G.tuition, cols: [...rateCols('Tuition status'), { k: 'share', h: 'Share of dropouts', num: true, f: (r) => pct(r.share) }] }}
-            note="The 'share of dropouts' label is the trade-off: most dropouts were current on tuition, so a tuition-only alert misses most of them. The academic signs in the next section fill that gap."
+            table={{ rows: G.tuition, cols: [...rateCols('Tuition status'), { k: 'share', h: 'Share of dropouts', num: true, f: (r) => S.dropouts ? pct(r.share) : '—' }] }}
+            note={S.dropouts ? `${num(G.tuition[1].dropouts)} of ${num(S.dropouts)} recorded departures in this selection had current tuition. A payment-only rule would miss those students.` : 'This selection has no recorded departures. Coverage cannot be calculated.'}
           >
             <RateBars rows={G.tuition} overall={S.dropRate} max={tuitionMax} showShare />
           </Card>
@@ -247,7 +248,7 @@ export default function App() {
           </Card>
         </Section>
 
-        <Section id="academic" kicker="03 · Closing the gap" title="How does first-term progress relate to dropout?" intro="Most dropouts were current on tuition. The share of first-semester courses a student passed is a second signal, available once the first semester ends.">
+        <Section id="academic" kicker="03 · Closing the gap" title="How does first-term progress relate to dropout?" intro="After the first semester, advisors can compare students by the share of enrolled units they passed. Students with no enrolled units form a separate group.">
           <Card
             wide
             title="Dropout rate by share of 1st-semester courses passed"
@@ -273,17 +274,17 @@ export default function App() {
             <Heatmap rowTitle="1st semester" colTitle="2nd-semester courses passed" rowLabels={G.pCols.map((c) => c[1])} colLabels={['Passed < 50%', 'Passed ≥ 50%']} cells={G.traj} />
           </Card>
           <Card
-            title="Why we don't chart average grades"
-            takeaway="Students who passed no units have a recorded grade of 0, which drags the dropout average down."
-            table={{ rows: G.grades, cols: [{ k: 'outcome', h: 'Outcome' }, { k: 'withZero', h: 'Mean incl. zeros', num: true, f: (r) => r.withZero.toFixed(2) }, { k: 'noZero', h: 'Mean excl. zeros', num: true, f: (r) => r.noZero.toFixed(2) }, { k: 'zeros', h: 'Zero grades', num: true, f: (r) => num(r.zeros) }] }}
+            title="First-term grades with and without recorded zeros"
+            takeaway="Removing zero grades changes which students contribute to the mean. Compare both calculations on the same 0–20 scale."
+            table={{ rows: G.grades, cols: [{ k: 'outcome', h: 'Outcome' }, { k: 'withZero', h: 'Mean incl. zeros', num: true, f: (r) => r.withZero?.toFixed(2) ?? '—' }, { k: 'noZero', h: 'Mean excl. zeros', num: true, f: (r) => r.noZero?.toFixed(2) ?? '—' }, { k: 'zeros', h: 'Zero grades', num: true, f: (r) => num(r.zeros) }] }}
           >
             <div className="gradecmp">
               {G.grades.map((g, i) => (
                 <div className="gc-row" key={g.outcome}>
                   <div className="gc-l"><span className="sw" style={{ background: OUTCOME_COLORS[i] }} />{g.outcome}</div>
                   <div className="gc-track">
-                    <div className="gc-bar ghost" style={{ width: `${(g.noZero / 20) * 100}%` }}><span>{g.noZero.toFixed(1)}</span></div>
-                    <div className="gc-bar" style={{ width: `${(g.withZero / 20) * 100}%`, background: OUTCOME_COLORS[i] }}><span>{g.withZero.toFixed(1)}</span></div>
+                    <div className="gc-bar ghost" style={{ width: `${(g.noZero / 20) * 100}%` }}><span>{g.noZero?.toFixed(1) ?? '—'}</span></div>
+                    <div className="gc-bar" style={{ width: `${(g.withZero / 20) * 100}%`, background: OUTCOME_COLORS[i] }}><span>{g.withZero?.toFixed(1) ?? '—'}</span></div>
                   </div>
                 </div>
               ))}
@@ -293,7 +294,7 @@ export default function App() {
         </Section>
 
         <Section id="alert" kicker="04 · Interactive" title="Build your own early-alert list" intro="Pick the signs your office would act on. The meters show how many students you would contact, what share of recorded dropouts met the rule, and what share of the selected group dropped out. The filters at the top still apply.">
-          <Card wide title="Early-alert builder" takeaway="Each extra sign catches more dropouts but makes the list longer. Choose the balance your advising capacity can handle.">
+          <Card wide title="Early-alert builder" takeaway="Select a second sign to see which additional students meet the rule. Students who meet several signs count once.">
             <FlagBuilder students={list} />
           </Card>
         </Section>
@@ -310,10 +311,10 @@ export default function App() {
           <Card title="By age at enrollment" takeaway={G.age[0].n && G.age[2].n ? `Students aged 25–34 at entry dropped out at ${pct(G.age[2].dropRate)}, compared with ${pct(G.age[0].dropRate)} for students under 21.` : ''} table={{ rows: G.age, cols: rateCols('Age') }}>
             <RateBars rows={G.age} overall={S.dropRate} />
           </Card>
-          <Card title="By gender and attendance" takeaway="Men and evening students dropped out at higher rates. The data does not record why." table={{ rows: [...G.gender, ...G.attend], cols: rateCols('Group') }} note="Describe these as groups that need support, not as students who are likely to fail.">
+          <Card title="By gender and attendance" takeaway="Compare women with men, and daytime with evening students. Each student appears in one group in each comparison." table={{ rows: [...G.gender, ...G.attend], cols: rateCols('Group') }} note="Describe these as groups that need support, not as students who are likely to fail.">
             <RateBars rows={[...G.gender, ...G.attend]} overall={S.dropRate} />
           </Card>
-          <Card title="How students were admitted" takeaway="Students admitted through the 'Over 23 years old' route and from other higher-education courses had the highest dropout rates." table={{ rows: G.app, cols: rateCols('Application mode') }}>
+          <Card title="Most common admission routes" takeaway="Up to seven routes are shown, ordered by the number of students in this selection." table={{ rows: G.app, cols: rateCols('Application mode') }}>
             <RateBars rows={G.app} overall={S.dropRate} />
           </Card>
           <Card title="Moving for study" takeaway={G.displaced[0].n && G.displaced[1].n ? `Students who moved away from home to study had a recorded dropout rate of ${pct(G.displaced[0].dropRate)} vs ${pct(G.displaced[1].dropRate)} for other students.` : ''} table={{ rows: G.displaced, cols: rateCols('Displaced') }}>
@@ -322,25 +323,26 @@ export default function App() {
         </Section>
 
         <Section id="more" kicker="06 · Beyond the proposal" title="More signals we tested" intro="Some fields show clear patterns. Others show no consistent pattern, and reporting those keeps the main story honest.">
-          <Card title="Admission grade (fifths of all students)" takeaway={G.adm[0].n ? `The lowest fifth of admission grades had the highest dropout rate (${pct(G.adm[0].dropRate)}). Above that, the rate levels off.` : ''} table={{ rows: G.adm, cols: rateCols('Admission grade') }}>
+          <Card title="Admission grade (fifths of all students)" takeaway={G.adm[0].n && G.adm[4].n ? `Dropout was ${pct(G.adm[0].dropRate)} in the lowest admission-grade band and ${pct(G.adm[4].dropRate)} in the highest.` : 'Grade cutoffs come from the full study and stay fixed when you filter.' } table={{ rows: G.adm, cols: rateCols('Admission grade') }}>
             <Columns rows={G.adm} overall={S.dropRate} xLabel="Admission grade quintile (low → high)" />
           </Card>
-          <Card title="Unemployment rate when the student enrolled" takeaway="No consistent trend. Dropout rises and falls across economic conditions, so the economy does not explain much on its own." table={{ rows: G.unemp, cols: rateCols('Unemployment') }} note="Each value is one enrollment cohort's national rate, so this compares cohorts rather than individual students.">
+          <Card title="Unemployment rate when the student enrolled" takeaway="Each bar groups students by the national unemployment rate in their enrollment year." table={{ rows: G.unemp, cols: rateCols('Unemployment') }} note="Each value is one enrollment cohort's national rate, so this compares cohorts rather than individual students.">
             <Columns rows={G.unemp} overall={S.dropRate} xLabel="Portugal unemployment rate at enrollment" />
           </Card>
-          <Card title="Marital status" takeaway="Married and divorced students dropped out more often. These groups overlap heavily with older students." table={{ rows: G.marital, cols: rateCols('Marital status') }}>
+          <Card title="Marital status" takeaway="Use the age-at-enrollment filter to compare marital groups within the same age band." table={{ rows: G.marital, cols: rateCols('Marital status') }}>
             <RateBars rows={G.marital} overall={S.dropRate} />
           </Card>
-          <Card title="Small groups: special needs and international" takeaway="Both groups have rates close to average and wide intervals. The samples are too small to support conclusions." table={{ rows: [...G.special, ...G.intl], cols: rateCols('Group') }}>
+          <Card title="Small groups: special needs and international" takeaway="Read each rate alongside its student count. A single departure changes the percentage more in a smaller group." table={{ rows: [...G.special, ...G.intl], cols: rateCols('Group') }}>
             <RateBars rows={[...G.special, ...G.intl]} overall={S.dropRate} />
           </Card>
         </Section>
 
-        <Section id="act" kicker="07 · What to do" title="Recommendations" intro="Each action uses data the university already collects and follows from the findings above. None depends on a causal claim the data cannot support.">
+        </>}
+        <Section id="act" kicker="07 · What to do" title="Recommendations" intro="These suggestions use the full study cohort, across all filter settings. A campus pilot would be needed to learn whether outreach helps.">
           <div className="recs wide">
             {[
-              ['1', 'Treat a missed payment as a retention alert', `Contact students within weeks of a missed tuition payment, not only through billing. In this data, ${pct(H.t[0].dropRate, 0)} of students behind on tuition dropped out.`, 'Financial aid + advising'],
-              ['2', 'Offer payment plans and emergency aid early', `Students with debt dropped out at ${pct(H.d[0].dropRate, 0)} and those without at ${pct(H.d[1].dropRate, 0)}. Flexible payment options matter most for working and evening students.`, 'Bursar · Financial aid'],
+              ['1', 'Check when payment information becomes available', `Ask billing staff when a missed payment can first trigger an offer of help. In the full cohort, ${pct(H.t[0].dropRate, 0)} of students behind on tuition dropped out.`, 'Financial aid + advising'],
+              ['2', 'Offer payment plans and emergency aid early', `Students with debt dropped out at ${pct(H.d[0].dropRate, 0)} and those without at ${pct(H.d[1].dropRate, 0)}. Ask students which payment options would have been useful.`, 'Bursar · Financial aid'],
               ['3', 'Review scholarship reach', `Scholarship holders dropped out at ${pct(H.sc[0].dropRate, 0)}, compared with ${pct(H.sc[1].dropRate, 0)} for others. Check whether more at-risk students could qualify, and test this with a pilot. Do not assume the scholarships caused the gap.`, 'Enrollment management'],
               ['4', 'Add a first-semester academic check-in', 'Most dropouts paid their tuition. Students who passed under half of their first-semester courses dropped out at 84.8%. Flag them for advising before the second term.', 'Advising · Student success'],
             ].map(([n, t, d, o]) => (
@@ -369,7 +371,7 @@ export default function App() {
               <li>Numeric codes were decoded into labels (course, marital status, application mode, yes/no fields). The team checked for missing values (0 missing cells) and exact duplicate rows (0).</li>
               <li><b>Dropout rate</b> = dropouts ÷ all students in the group. 'Enrolled' stays in the denominator.</li>
               <li><b>Pass rate</b> = approved ÷ enrolled 1st-semester units, only where enrolled &gt; 0. The 180 students with no enrolled units are shown separately.</li>
-              <li><b>95% intervals</b> use the Wilson score method. Groups under 30 students are faded and marked ⚠.</li>
+              <li><b>95% intervals</b> use the Wilson score method. Wider intervals indicate less precision under a binomial sampling model. They do not account for differences between institutions.</li>
               <li><b>Coverage</b> = flagged dropouts ÷ all dropouts. <b>Workload</b> = flagged ÷ all students.</li>
             </ul>
           </Card>

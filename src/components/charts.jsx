@@ -72,7 +72,7 @@ export function TipBody({ title, rows, warn }) {
   );
 }
 
-const statRows = (d) => [
+const statRows = (d) => !d.n ? [['Students', '0'], ['Dropout rate', 'No students in this group']] : [
   ['Students', num(d.n)],
   ['Dropouts', num(d.dropouts)],
   ['Dropout rate', pct(d.dropRate)],
@@ -136,15 +136,15 @@ export function Donut({ segments, total, centerLabel, centerValue }) {
 }
 
 // ---------- Horizontal rate bars with 95% CI whiskers and overall reference ----------
-export function RateBars({ rows, overall, max = 1, showShare = false, color = 'var(--drop)', onSelect, selected }) {
+export function RateBars({ rows, overall, max = 1, showShare = false, color = 'var(--brand)', onSelect, selected }) {
   const [ref, inView] = useInView();
   const { wrap, show, hide, node } = useTip();
   return (
     <div className="ratebars" ref={(el) => { ref.current = el; wrap.current = el; }}>
       {rows.map((d, i) => {
-        const small = d.n < MIN_N;
+        const small = d.n > 0 && d.n < MIN_N;
         const w = (d.dropRate / max) * 100;
-        const tip = <TipBody title={d.label} rows={[...statRows(d), ...(showShare ? [['Share of all dropouts', pct(d.share)]] : [])]} warn={small} />;
+        const tip = <TipBody title={d.label} rows={[...statRows(d), ...(showShare ? [['Share of all dropouts', overall > 0 ? pct(d.share) : '—']] : [])]} warn={small} />;
         return (
           <div
             className={`rb-row${onSelect ? ' clickable' : ''}${selected === d.key ? ' sel' : ''}${small ? ' small' : ''}`}
@@ -153,7 +153,7 @@ export function RateBars({ rows, overall, max = 1, showShare = false, color = 'v
             onMouseLeave={hide}
             onClick={(e) => (onSelect ? onSelect(d.key) : show(e, tip))}
             tabIndex={0}
-            aria-label={`${d.label}: ${pct(d.dropRate)} dropout, ${num(d.n)} students`}
+            aria-label={`${d.label}: ${d.n ? pct(d.dropRate) : 'unavailable'} dropout, ${num(d.n)} students`}
           >
             <div className="rb-label">
               <span>{d.label}</span>
@@ -174,7 +174,7 @@ export function RateBars({ rows, overall, max = 1, showShare = false, color = 'v
             </div>
             <div className="rb-val">
               {d.n ? pct(d.dropRate) : '–'}
-              {showShare && d.n > 0 && <span className="rb-share">{pct(d.share, 0)} of dropouts</span>}
+              {showShare && overall > 0 && d.n > 0 && <span className="rb-share">{pct(d.share, 0)} of dropouts</span>}
             </div>
           </div>
         );
@@ -206,7 +206,7 @@ export function Columns({ rows, max = 1, overall, xLabel }) {
           {overall != null && <div className="col-ref" style={{ bottom: `${(overall / max) * 100}%` }}><span>avg {pct(overall, 0)}</span></div>}
         </div>
         {rows.map((d, i) => {
-          const small = d.n < MIN_N;
+          const small = d.n > 0 && d.n < MIN_N;
           const tip = <TipBody title={d.label} rows={statRows(d)} warn={small} />;
           return (
             <div
@@ -216,12 +216,12 @@ export function Columns({ rows, max = 1, overall, xLabel }) {
               onMouseLeave={hide}
               onClick={(e) => show(e, tip)}
               tabIndex={0}
-              aria-label={`${d.label}: ${pct(d.dropRate)} dropout of ${num(d.n)}`}
+              aria-label={`${d.label}: ${d.n ? pct(d.dropRate) : 'unavailable'} dropout of ${num(d.n)}`}
             >
               <div className="col-area">
                 <div
                   className="col-bar"
-                  style={{ height: inView ? `${(d.dropRate / max) * 100}%` : 0, transitionDelay: `${i * 80}ms`, opacity: small ? 0.45 : 1, background: d.color || 'var(--drop)' }}
+                  style={{ height: inView ? `${(d.dropRate / max) * 100}%` : 0, transitionDelay: `${i * 80}ms`, opacity: small ? 0.45 : 1, background: d.color || 'var(--brand)' }}
                 >
                   <span className="col-val">{d.n ? pct(d.dropRate, 0) : '–'}</span>
                 </div>
@@ -280,7 +280,7 @@ export function StackedOutcomes({ rows, colors, names }) {
 }
 
 // ---------- Heatmap of dropout rate ----------
-const RAMP = ['#fde6da', '#fbc4a6', '#f59b70', '#eb6834', '#c24e1d', '#8a3210'];
+const RAMP = ['#eff5ff', '#c9dcf6', '#93b6e6', '#426daa', '#0039a6', '#0a285e'];
 export const rampColor = (v) => RAMP[Math.min(RAMP.length - 1, Math.floor(v * RAMP.length))];
 
 export function Heatmap({ rowLabels, colLabels, cells, rowTitle, colTitle }) {
@@ -296,7 +296,7 @@ export function Heatmap({ rowLabels, colLabels, cells, rowTitle, colTitle }) {
           <div className="heat-r" key={r} style={{ display: 'contents' }}>
             <div className="heat-rh">{r}</div>
             {cells[ri].map((c, ci) => {
-              const small = c.n < MIN_N;
+              const small = c.n > 0 && c.n < MIN_N;
               const dark = c.dropRate >= 0.5;
               const tip = <TipBody title={`${r} · ${colLabels[ci]}`} rows={statRows(c)} warn={small} />;
               return (
@@ -305,7 +305,7 @@ export function Heatmap({ rowLabels, colLabels, cells, rowTitle, colTitle }) {
                   className={`heat-c${small ? ' small' : ''}`}
                   style={{
                     background: c.n ? rampColor(c.dropRate) : 'var(--surface-2)',
-                    color: dark ? '#fff' : '#0b0b0b',
+                    color: !c.n ? 'var(--muted)' : dark ? '#fff' : '#112238',
                     transform: inView ? 'scale(1)' : 'scale(.6)',
                     opacity: inView ? 1 : 0,
                     transitionDelay: `${(ri * colLabels.length + ci) * 50}ms`,
@@ -314,10 +314,10 @@ export function Heatmap({ rowLabels, colLabels, cells, rowTitle, colTitle }) {
                   onMouseLeave={hide}
                   onClick={(e) => show(e, tip)}
                   tabIndex={0}
-                  aria-label={`${r}, ${colLabels[ci]}: ${pct(c.dropRate)} dropout of ${c.n}`}
+                  aria-label={`${r}, ${colLabels[ci]}: ${c.n ? pct(c.dropRate) : 'unavailable'} dropout of ${c.n}`}
                 >
                   <b>{c.n ? pct(c.dropRate, 0) : '–'}</b>
-                  <small>n={num(c.n)}</small>
+                  <small>n={num(c.n)}{small ? ' · small group' : ''}</small>
                 </div>
               );
             })}
@@ -379,7 +379,7 @@ export function CourseScatter({ rows, overall, selected, onSelect }) {
               onClick={() => onSelect(sel ? 'All' : d.key)}
               tabIndex={0}
               onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onSelect(sel ? 'All' : d.key)}
-              aria-label={`${d.label}: ${num(d.n)} students, ${pct(d.dropRate)} dropout, ${d.dropouts} dropouts`}
+              aria-label={`${d.label}: ${num(d.n)} students, ${d.n ? pct(d.dropRate) : 'unavailable'} dropout, ${d.dropouts} dropouts`}
             />
           );
         })}

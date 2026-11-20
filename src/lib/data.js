@@ -10,8 +10,8 @@ export const APP_MODES = raw.dims['Application mode'];
 export const AGE_GROUPS = ['Under 21', '21–24', '25–34', '35+'];
 export const BANDS = [
   { key: '0', label: '0%', long: 'Passed none' },
-  { key: 'lt50', label: '1–49%', long: 'Passed under half' },
-  { key: 'lt100', label: '50–99%', long: 'Passed half or more' },
+  { key: 'lt50', label: '1–49%', long: 'Passed some, under half' },
+  { key: 'lt100', label: '50–99%', long: 'Passed at least half, below 100%' },
   { key: '100', label: '100%', long: 'Passed all' },
   { key: 'none', label: 'No units', long: 'No units enrolled' },
 ];

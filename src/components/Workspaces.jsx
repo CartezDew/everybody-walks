@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { BANDS, num, pct, summarize } from '../lib/data';
+import { BANDS, MIN_N, num, pct, summarize } from '../lib/data';
 import { Card } from './ui';
 import FlagBuilder from './FlagBuilder';
 
 export const ROLES = [
-  { id: 'leadership', label: 'University leadership', task: 'Allocate resources', question: 'Where does financial support have the most reach?' },
+  { id: 'leadership', label: 'University leadership', task: 'Allocate resources', question: 'How much would academic check-ins add to tuition outreach?' },
   { id: 'advising', label: 'Academic advising', task: 'Plan academic check-ins', question: 'Who could benefit from a first-term check-in?' },
   { id: 'success', label: 'Student success', task: 'Coordinate support', question: 'Where do financial and academic needs overlap?' },
   { id: 'enrollment', label: 'Enrollment management', task: 'Compare programs', question: 'Which programs account for the most departures?' },
@@ -34,6 +34,23 @@ const rate = (x, n) => n ? pct(x / n) : '—';
 function Metric({ label, value, detail }) {
   return <div className="metric"><span>{label}</span><strong>{value}</strong><small>{detail}</small></div>;
 }
+function OutreachComparison({ tuition, additional, departures }) {
+  const scenarios = [
+    { label: 'Tuition behind', students: tuition.n, departures: tuition.dropouts },
+    { label: 'Tuition behind or passed under half of first-term units', students: tuition.n + additional.n, departures: tuition.dropouts + additional.dropouts },
+  ];
+  const finding = additional.n
+    ? `A first-term check-in would add ${num(additional.n)} students whose tuition was current. Of those, ${num(additional.dropouts)} had a recorded dropout outcome.`
+    : 'Both rules reach the same students in this selection. No additional students had current tuition and passed under half of their enrolled units.';
+  return <Card title="Two ways to plan check-ins" takeaway={finding}
+    note="Each student counts once per rule. The academic check requires first-term results. The records do not establish when tuition status was measured.">
+    <div className="outreach-scroll"><table className="outreach-table" aria-label="Historical reach of two outreach rules">
+      <thead><tr><th scope="col">Outreach rule</th><th scope="col">Students to contact</th><th scope="col">Recorded dropouts covered</th></tr></thead>
+      <tbody>{scenarios.map(row => <tr key={row.label}><th scope="row">{row.label}</th><td>{num(row.students)}</td>
+        <td><b>{rate(row.departures, departures)}</b><small>{num(row.departures)} of {num(departures)} departures</small></td></tr>)}</tbody>
+    </table></div>
+  </Card>;
+}
 function Comparison({ title, rows, note, count = false }) {
   const max = count ? Math.max(1, ...rows.map(r => r.dropouts)) : 1;
   const value = r => count ? num(r.dropouts) : rate(r.dropouts, r.n);
@@ -43,11 +60,13 @@ function Comparison({ title, rows, note, count = false }) {
     { k: 'dropRate', h: 'Dropout rate', num: true, f: r => rate(r.dropouts, r.n) },
     { k: 'ci', h: '95% Wilson interval', f: r => r.n ? r.ci.map(v => pct(v)).join(' – ') : '—' },
   ] }}>
-    <div className="compare-rows">{rows.map((r,i) => <div className="compare-row" key={r.key}>
-      <div><b>{r.label}</b><small>{num(r.dropouts)} of {num(r.n)} students{r.n > 0 && r.n < 30 ? ' · small group' : ''}</small></div>
-      <div className="measure-track"><i style={{width: ((count ? r.dropouts : r.dropRate) / max * 100) + '%', background: i === 0 ? 'var(--brand)' : 'var(--secondary-bar)'}}/></div>
+    <div className="compare-rows">{rows.map(r => <div className="compare-row" key={r.key}>
+      <div><b>{r.label}</b><small>{r.n ? `${num(r.dropouts)} of ${num(r.n)} students left` : 'No students in selection'}{r.n > 0 && r.n < MIN_N ? ' · small group' : ''}</small></div>
+      <div className="measure-track"><i style={{width: ((count ? r.dropouts : r.dropRate) / max * 100) + '%'}}/></div>
       <strong>{value(r)}</strong>
-    </div>)}</div>
+    </div>)}
+      <div className="compare-row compare-scale" aria-hidden="true"><span/><div><span>0</span><span>{count ? num(max) : '100%'}</span></div><span/></div>
+    </div>
   </Card>;
 }
 
@@ -61,9 +80,13 @@ export function Workspace({ role, list, groups, summary: s, onExplore }) {
   let metrics, chart, action, link;
   switch(role) {
     case 'leadership':
-      metrics = <>{base}<Metric label="Dropout rate" value={rate(s.dropouts,s.n)} detail={num(s.dropouts)+' recorded dropouts'}/><Metric label="Tuition behind" value={rate(late.dropouts,s.dropouts)} detail="of all dropouts in this cohort"/></>;
-      chart = <Comparison title="Dropout rate by tuition status" rows={groups.tuition} note="Each rate uses all students in that tuition group. The table includes 95% intervals."/>;
-      action = s.dropouts ? `Of ${num(s.dropouts)} students who left, ${num(groups.tuition[1].dropouts)} had current tuition. Use that count to weigh how far payment outreach alone could reach.` : 'No departures were recorded in this selection. Broaden the cohort to compare the reach of payment outreach.'; link='money'; break;
+      metrics = <>{base}<Metric label="Dropout among students behind on tuition" value={rate(late.dropouts,late.n)} detail={`${num(late.dropouts)} of ${num(late.n)} students`}/><Metric label="Departures covered by tuition alone" value={rate(late.dropouts,s.dropouts)} detail={`${num(late.dropouts)} of ${num(s.dropouts)} recorded dropouts`}/></>;
+      chart = <div className="leadership-evidence">
+        <OutreachComparison tuition={late} additional={groups.heatTP[1][0]} departures={s.dropouts}/>
+        <Comparison title="Dropout rate by tuition status" rows={groups.tuition} note="The denominator includes everyone in each tuition group, including students still enrolled. Open Table for 95% Wilson intervals."/>
+      </div>;
+      action = 'Compare the extra invitations with available advising appointments. Before a pilot, check when your campus can see payment and course results. Track who accepts help and whether staff can follow up.';
+      link = 'alert'; break;
     case 'advising':
       metrics = <>{base}<Metric label="Passed under half" value={num(low.n)} detail="students with first-term results"/><Metric label="Dropout in that group" value={rate(low.dropouts,low.n)} detail={num(low.dropouts)+' recorded dropouts'}/></>;
       chart = <Comparison title="Dropout rate by first-term units passed" rows={groups.bands.map((r,i)=>({...r,label:BANDS[i].long}))} note="Pass rate is approved units divided by enrolled units. Students with zero enrolled units appear separately."/>;

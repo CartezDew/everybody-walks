@@ -29,9 +29,8 @@ export default function FlagBuilder({ students }) {
       f,
       r,
       workload: all.n ? f.n / all.n : 0,
-      coverage: all.dropouts ? f.dropouts / all.dropouts : 0,
-      precision: f.n ? f.dropRate : 0,
-      lift: all.dropRate ? (f.n ? f.dropRate / all.dropRate : 0) : 0,
+      coverage: all.dropouts ? f.dropouts / all.dropouts : null,
+      precision: f.n ? f.dropRate : null,
       all,
     };
   }, [students, on, thr]);
@@ -62,7 +61,7 @@ export default function FlagBuilder({ students }) {
         <div className="meters">
           <Meter label="Outreach workload" hint="share of students flagged" value={res.workload} color="var(--grad)" inView={inView} big={`${num(res.f.n)} students`} />
           <Meter label="Coverage of recorded dropouts" hint="share of all dropouts who were flagged" value={res.coverage} color="var(--drop)" inView={inView} big={`${num(res.f.dropouts)} of ${num(res.all.dropouts)}`} />
-          <Meter label="Dropout among flagged students" hint="flagged students who dropped out" value={res.precision} color="var(--enr)" inView={inView} big={res.f.n ? `${res.lift.toFixed(1)}× the average` : '–'} />
+          <Meter label="Dropout among flagged students" hint="flagged students who dropped out" value={res.precision} color="var(--enr)" inView={inView} big={`${num(res.f.dropouts)} of ${num(res.f.n)} students`} />
         </div>
         <div className="flag-compare">
           <div>
@@ -79,7 +78,7 @@ export default function FlagBuilder({ students }) {
         <p className="flag-read">
           {res.active.length === 0
             ? 'Turn on at least one sign to build an early-alert list.'
-            : `This rule selects ${num(res.f.n)} of ${num(res.all.n)} students. Of the ${num(res.all.dropouts)} recorded dropouts in this cohort, ${num(res.f.dropouts)} met the rule. Compare the group size with your available appointments.`}
+            : `Of the students this rule would contact, ${num(res.f.graduates)} graduated and ${num(res.f.enrolled)} were still enrolled at the study endpoint. Another ${num(res.r.dropouts)} students who dropped out fell outside the rule. Keep a way for students to request help directly.`}
 
         </p>
       </div>
@@ -92,7 +91,7 @@ function Meter({ label, hint, value, color, inView, big }) {
     <div className="meter">
       <div className="meter-top">
         <span className="meter-l">{label}</span>
-        <span className="meter-v">{pct(value, 0)}</span>
+        <span className="meter-v">{value == null ? '—' : pct(value, 0)}</span>
       </div>
       <div className="meter-track"><div className="meter-bar" style={{ width: inView ? `${value * 100}%` : 0, background: color }} /></div>
       <div className="meter-b"><span>{hint}</span><b>{big}</b></div>

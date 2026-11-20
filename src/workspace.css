@@ -2,19 +2,19 @@
 :root {
   --page:#f8f9fb; --surface:#fff; --surface-2:#edf1f6; --ink:#132038; --ink-2:#40536b;
   --muted:#59697d; --grid:#dae1eb; --border:#d6dfeb; --brand:#0039a6; --grad:#0039a6;
-  --drop:#ad2e43; --enr:#287570; --secondary-bar:#8ea9d5; --accent-bg:#edf3fc;
+  --drop:#ad2e43; --enr:#287570; --muted-bar:#7c8a9e; --secondary-bar:#8ea9d5; --accent-bg:#edf3fc;
   --font:'Gill Sans','Gill Sans MT',Avenir,'Segoe UI',sans-serif; --shadow:none; --radius:12px;
 }
 :root[data-theme='dark'] {
   --page:#0f1a2b; --surface:#19263b; --surface-2:#21334d; --ink:#f7f8fc; --ink-2:#c8d4e4;
   --brand:#a1c4ff; --grad:#83b3ff; --grid:#364761; --border:#394860; --muted:#a8b8ce;
-  --drop:#ff919d; --enr:#69c1b5; --secondary-bar:#6585b4; --accent-bg:#1b304e;
+  --drop:#ff919d; --enr:#69c1b5; --muted-bar:#8998ad; --secondary-bar:#6585b4; --accent-bg:#1b304e;
 }
 @media(prefers-color-scheme:dark) {
   :root:not([data-theme='light']) {
     --page:#0f1a2b; --surface:#19263b; --surface-2:#21334d; --ink:#f7f8fc; --ink-2:#c8d4e4;
     --brand:#a1c4ff; --grad:#83b3ff; --grid:#364761; --border:#394860; --muted:#a8b8ce;
-    --drop:#ff919d; --enr:#69c1b5; --secondary-bar:#6585b4; --accent-bg:#1b304e;
+    --drop:#ff919d; --enr:#69c1b5; --muted-bar:#8998ad; --secondary-bar:#6585b4; --accent-bg:#1b304e;
   }
 }
 .topbar-in,.footer-in,.fb-inner,.fb-warn,main,.role-picker,.sleeve-in {max-width:1240px;margin-inline:auto;padding-inline:clamp(18px,4vw,56px)}
@@ -138,4 +138,21 @@
 
 @media (max-width: 360px) {
   .cover-art .campus-pack { left: auto; right: 0; }
+}
+
+.leadership-evidence { display: grid; gap: 18px; }
+.measure-track i { background: var(--brand); }
+.compare-scale { margin-top: -8px; color: var(--muted); font-size: 12px; }
+.compare-scale div { display: flex; justify-content: space-between; }
+.outreach-scroll { overflow-x: auto; }
+.outreach-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.outreach-table th, .outreach-table td { text-align: right; padding: 12px 5px; vertical-align: middle; }
+.outreach-table th:first-child { text-align: left; padding-left: 0; width: 38%; }
+.outreach-table thead { color: var(--muted); font-size: 13px; }
+.outreach-table tbody tr { border-top: 1px solid var(--border); }
+.outreach-table td b { color: var(--brand); }
+.outreach-table td small { display: block; color: var(--muted); }
+@media (max-width: 500px) {
+  .outreach-table { font-size: 14px; }
+  .outreach-table th, .outreach-table td { padding: 9px 3px; }
 }
