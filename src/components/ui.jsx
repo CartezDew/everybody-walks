@@ -6,6 +6,13 @@ export function Logo({ size = 40 }) {
   return <img className="logo-mark" src="bear-head.png" width={size} height={size} alt="" />;
 }
 
+export function GraduationCap() {
+  return <svg className="graduation-cap" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+    strokeWidth="1.7" strokeLinejoin="round" strokeLinecap="round" aria-hidden="true">
+    <path d="m2 9 10-5 10 5-10 5-10-5Zm4 2v5q6 5 12 0v-5m4-2v7"/>
+  </svg>;
+}
+
 // ---------- Count-up number ----------
 export function CountUp({ value, format, duration = 1100 }) {
   const [ref, inView] = useInView();
@@ -31,10 +38,10 @@ export function CountUp({ value, format, duration = 1100 }) {
   return <span ref={ref}>{format(v)}</span>;
 }
 
-export function Kpi({ label, value, format, sub, accent }) {
+export function Kpi({ label, value, format, sub, accent, icon }) {
   return (
     <div className="kpi" style={{ '--accent': accent }}>
-      <div className="kpi-label">{label}</div>
+      <div className="kpi-label">{icon}{label}</div>
       <div className="kpi-value"><CountUp value={value} format={format} /></div>
       {sub && <div className="kpi-sub">{sub}</div>}
     </div>

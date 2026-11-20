@@ -59,9 +59,9 @@ export default function FlagBuilder({ students }) {
 
       <div className="flag-results" aria-live="polite">
         <div className="meters">
-          <Meter label="Outreach workload" hint="share of students flagged" value={res.workload} color="var(--grad)" inView={inView} big={`${num(res.f.n)} students`} />
-          <Meter label="Coverage of recorded dropouts" hint="share of all dropouts who were flagged" value={res.coverage} color="var(--drop)" inView={inView} big={`${num(res.f.dropouts)} of ${num(res.all.dropouts)}`} />
-          <Meter label="Dropout among flagged students" hint="flagged students who dropped out" value={res.precision} color="var(--enr)" inView={inView} big={`${num(res.f.dropouts)} of ${num(res.f.n)} students`} />
+          <Meter label="Outreach workload" hint="share of students flagged" value={res.workload} color="var(--gold)" inView={inView} big={`${num(res.f.n)} students`} />
+          <Meter label="Coverage of recorded dropouts" hint="share of all dropouts who were flagged" value={res.coverage} color="var(--comparison)" inView={inView} big={`${num(res.f.dropouts)} of ${num(res.all.dropouts)}`} />
+          <Meter label="Dropout among flagged students" hint="flagged students who dropped out" value={res.precision} color="var(--drop)" inView={inView} big={`${num(res.f.dropouts)} of ${num(res.f.n)} students`} />
         </div>
         <div className="flag-compare">
           <div>

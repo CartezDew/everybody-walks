@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { BANDS, MIN_N, num, pct, summarize } from '../lib/data';
 import { Card } from './ui';
+import { RateKey, rateFill } from './charts';
 import FlagBuilder from './FlagBuilder';
 
 export const ROLES = [
@@ -40,18 +41,18 @@ function OutreachComparison({ tuition, additional, departures }) {
     { label: 'Tuition behind or passed under half of first-term units', students: tuition.n + additional.n, departures: tuition.dropouts + additional.dropouts },
   ];
   const finding = additional.n
-    ? `A first-term check-in would add ${num(additional.n)} students whose tuition was current. Of those, ${num(additional.dropouts)} had a recorded dropout outcome.`
+    ? <>A first-term check-in would add <strong>{num(additional.n)} students</strong> whose tuition was current. Of those, <strong>{num(additional.dropouts)}</strong> had a recorded dropout outcome.</>
     : 'Both rules reach the same students in this selection. No additional students had current tuition and passed under half of their enrolled units.';
   return <Card title="Two ways to plan check-ins" takeaway={finding}
     note="Each student counts once per rule. The academic check requires first-term results. The records do not establish when tuition status was measured.">
     <div className="outreach-scroll"><table className="outreach-table" aria-label="Historical reach of two outreach rules">
       <thead><tr><th scope="col">Outreach rule</th><th scope="col">Students to contact</th><th scope="col">Recorded dropouts covered</th></tr></thead>
-      <tbody>{scenarios.map(row => <tr key={row.label}><th scope="row">{row.label}</th><td>{num(row.students)}</td>
+      <tbody>{scenarios.map((row, i) => <tr key={row.label} className={i === 1 && additional.dropouts > 0 ? 'reach-gain' : undefined}><th scope="row">{row.label}</th><td>{num(row.students)}</td>
         <td><b>{rate(row.departures, departures)}</b><small>{num(row.departures)} of {num(departures)} departures</small></td></tr>)}</tbody>
     </table></div>
   </Card>;
 }
-function Comparison({ title, rows, note, count = false }) {
+function Comparison({ title, rows, note, overall, count = false }) {
   const max = count ? Math.max(1, ...rows.map(r => r.dropouts)) : 1;
   const value = r => count ? num(r.dropouts) : rate(r.dropouts, r.n);
   return <Card title={title} wide note={note} table={{ rows, cols: [
@@ -62,11 +63,12 @@ function Comparison({ title, rows, note, count = false }) {
   ] }}>
     <div className="compare-rows">{rows.map(r => <div className="compare-row" key={r.key}>
       <div><b>{r.label}</b><small>{r.n ? `${num(r.dropouts)} of ${num(r.n)} students left` : 'No students in selection'}{r.n > 0 && r.n < MIN_N ? ' · small group' : ''}</small></div>
-      <div className="measure-track"><i style={{width: ((count ? r.dropouts : r.dropRate) / max * 100) + '%'}}/></div>
+      <div className="measure-track"><i style={{width: ((count ? r.dropouts : r.dropRate) / max * 100) + '%', background: count ? 'var(--comparison)' : rateFill(r, overall)}}/></div>
       <strong>{value(r)}</strong>
     </div>)}
       <div className="compare-row compare-scale" aria-hidden="true"><span/><div><span>0</span><span>{count ? num(max) : '100%'}</span></div><span/></div>
     </div>
+    {!count && <RateKey overall={overall} separateUnits={rows.some(row => row.key === 'none')}/>}
   </Card>;
 }
 
@@ -83,24 +85,24 @@ export function Workspace({ role, list, groups, summary: s, onExplore }) {
       metrics = <>{base}<Metric label="Dropout among students behind on tuition" value={rate(late.dropouts,late.n)} detail={`${num(late.dropouts)} of ${num(late.n)} students`}/><Metric label="Departures covered by tuition alone" value={rate(late.dropouts,s.dropouts)} detail={`${num(late.dropouts)} of ${num(s.dropouts)} recorded dropouts`}/></>;
       chart = <div className="leadership-evidence">
         <OutreachComparison tuition={late} additional={groups.heatTP[1][0]} departures={s.dropouts}/>
-        <Comparison title="Dropout rate by tuition status" rows={groups.tuition} note="The denominator includes everyone in each tuition group, including students still enrolled. Open Table for 95% Wilson intervals."/>
+        <Comparison overall={s.dropRate} title="Dropout rate by tuition status" rows={groups.tuition} note="The denominator includes everyone in each tuition group, including students still enrolled. Open Table for 95% Wilson intervals."/>
       </div>;
       action = 'Compare the extra invitations with available advising appointments. Before a pilot, check when your campus can see payment and course results. Track who accepts help and whether staff can follow up.';
       link = 'alert'; break;
     case 'advising':
       metrics = <>{base}<Metric label="Passed under half" value={num(low.n)} detail="students with first-term results"/><Metric label="Dropout in that group" value={rate(low.dropouts,low.n)} detail={num(low.dropouts)+' recorded dropouts'}/></>;
-      chart = <Comparison title="Dropout rate by first-term units passed" rows={groups.bands.map((r,i)=>({...r,label:BANDS[i].long}))} note="Pass rate is approved units divided by enrolled units. Students with zero enrolled units appear separately."/>;
+      chart = <Comparison overall={s.dropRate} title="Dropout rate by first-term units passed" rows={groups.bands.map((r,i)=>({...r,label:BANDS[i].long}))} note="Pass rate is approved units divided by enrolled units. Students with zero enrolled units appear separately."/>;
       action='Use the first-term results to size an offer of advising appointments. Advisors would still need to ask students which barriers they faced.';link='academic'; break;
     case 'success': {
       const cross = groups.tRows.flatMap(([,t],i)=>groups.pCols.map(([,p],j)=>({...groups.heatTP[i][j],key:i+'-'+j,label:t+' · '+p})));
       metrics = <>{base}<Metric label="Both signals present" value={num(both.n)} detail="behind on tuition and passed under half"/><Metric label="Dropout with both" value={rate(both.dropouts,both.n)} detail={num(both.dropouts)+' recorded dropouts'}/></>;
-      chart=<Comparison title="Tuition status and first-term progress" rows={cross} note="The comparison includes students with enrolled first-term units. The timing of the tuition record is unknown."/>;
+      chart=<Comparison overall={s.dropRate} title="Tuition status and first-term progress" rows={cross} note="The comparison includes students with enrolled first-term units. The timing of the tuition record is unknown."/>;
       action='Estimate how many joint appointments financial aid and advising might offer so students can discuss both needs in one visit.';link='academic'; break; }
     case 'enrollment': {
       const programs=groups.courses.filter(r=>r.n).sort((a,b)=>rank==='count' ? b.dropouts-a.dropouts || b.n-a.n : b.dropRate-a.dropRate || b.n-a.n);
       const largest=programs[0];
       metrics=<>{base}<Metric label="Programs represented" value={num(programs.length)} detail="with students in this cohort"/><Metric label={rank==='count'?'Largest dropout count':'Highest dropout rate'} value={largest ? (rank==='count'?num(largest.dropouts):pct(largest.dropRate)):'—'} detail={largest?.label || 'No programs'}/></>;
-      chart=<><div className="rank-controls"><span>Rank programs by</span>{['count','rate'].map(k=><button key={k} aria-pressed={rank===k} onClick={()=>setRank(k)}>Dropout {k}</button>)}</div><Comparison title={'Top programs by dropout '+rank} rows={programs.slice(0,5)} count={rank==='count'} note="Counts describe the number of departures. Rates account for program size. Small groups can move sharply with a single departure."/></>;
+      chart=<><div className="rank-controls"><span>Rank programs by</span>{['count','rate'].map(k=><button key={k} aria-pressed={rank===k} onClick={()=>setRank(k)}>Dropout {k}</button>)}</div><Comparison overall={s.dropRate} title={'Top programs by dropout '+rank} rows={programs.slice(0,5)} count={rank==='count'} note="Counts describe the number of departures. Rates account for program size. Small groups can move sharply with a single departure."/></>;
       action='Use counts to plan staffing and rates to identify programs for a closer review with department leads.';link='who';break;}
     default:
       metrics=null; chart=<Card title="Outreach simulator" wide note="These rules are exploratory. Tuition timing is unknown. Semester results become available only after the term."><FlagBuilder students={list}/></Card>;

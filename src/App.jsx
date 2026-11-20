@@ -4,7 +4,7 @@ import {
   applyFilters, summarize, groupRates, pct, num,
 } from './lib/data.js';
 import { Donut, RateBars, Columns, StackedOutcomes, Heatmap, CourseScatter, rateCols } from './components/charts.jsx';
-import { Logo, Kpi, Card, Section, FilterBar } from './components/ui.jsx';
+import { Logo, GraduationCap, Kpi, Card, Section, FilterBar } from './components/ui.jsx';
 import { RolePicker, Workspace } from './components/Workspaces.jsx';
 import FlagBuilder from './components/FlagBuilder.jsx';
 
@@ -181,7 +181,7 @@ export default function App() {
           <div className="kpis wide">
             <Kpi label="Students" value={S.n} format={(v) => num(Math.round(v))} sub={filterNote ? 'in current selection' : 'enrolled 2008–2019 cohorts'} accent="var(--ink-2)" />
             <Kpi label="Dropout rate" value={S.dropRate} format={(v) => pct(v)} sub={S.n ? `95% CI ${pct(S.ci[0])}–${pct(S.ci[1])}` : '–'} accent="var(--drop)" />
-            <Kpi label="Graduation rate" value={S.gradRate} format={(v) => pct(v)} sub={`${num(S.graduates)} graduates`} accent="var(--grad)" />
+            <Kpi icon={<GraduationCap/>} label="Graduation rate" value={S.gradRate} format={(v) => pct(v)} sub={`${num(S.graduates)} graduates`} accent="var(--grad)" />
             <Kpi label="Still enrolled" value={S.enrRate} format={(v) => pct(v)} sub={`${num(S.enrolled)} unresolved`} accent="var(--enr)" />
             <Kpi label="Dropouts" value={S.dropouts} format={(v) => num(Math.round(v))} sub="recorded departures" accent="var(--drop)" />
           </div>
@@ -244,7 +244,7 @@ export default function App() {
             takeaway={G.heatTS[0][0].n && G.heatTS[1][1].n ? `Behind on tuition with no scholarship: ${pct(G.heatTS[0][0].dropRate)} dropout. Current with a scholarship: ${pct(G.heatTS[1][1].dropRate)}.` : ''}
             table={{ rows: G.tRows.flatMap(([, r], ri) => G.scCols.map(([, c], ci) => ({ label: `${r} · ${c}`, ...G.heatTS[ri][ci] }))), cols: rateCols('Tuition · Scholarship') }}
           >
-            <Heatmap rowTitle="Tuition" colTitle="Scholarship" rowLabels={G.tRows.map((r) => r[1])} colLabels={G.scCols.map((c) => c[1])} cells={G.heatTS} />
+            <Heatmap overall={S.dropRate} rowTitle="Tuition" colTitle="Scholarship" rowLabels={G.tRows.map((r) => r[1])} colLabels={G.scCols.map((c) => c[1])} cells={G.heatTS} />
           </Card>
         </Section>
 
@@ -263,7 +263,7 @@ export default function App() {
             takeaway={G.heatTP[0][0].n && G.heatTP[1][1].n ? `Students with both signs dropped out at ${pct(G.heatTP[0][0].dropRate)}. Students with neither sign dropped out at ${pct(G.heatTP[1][1].dropRate)}.` : ''}
             table={{ rows: G.tRows.flatMap(([, r], ri) => G.pCols.map(([, c], ci) => ({ label: `${r} · ${c}`, ...G.heatTP[ri][ci] }))), cols: rateCols('Tuition · 1st-sem') }}
           >
-            <Heatmap rowTitle="Tuition" colTitle="1st-semester courses passed" rowLabels={G.tRows.map((r) => r[1])} colLabels={G.pCols.map((c) => c[1])} cells={G.heatTP} />
+            <Heatmap overall={S.dropRate} rowTitle="Tuition" colTitle="1st-semester courses passed" rowLabels={G.tRows.map((r) => r[1])} colLabels={G.pCols.map((c) => c[1])} cells={G.heatTP} />
           </Card>
           <Card
             title="Second-term progress"
@@ -271,7 +271,7 @@ export default function App() {
             table={{ rows: G.pCols.flatMap(([, r], ri) => ['2nd < 50%', '2nd ≥ 50%'].map((c, ci) => ({ label: `1st ${r} · ${c}`, ...G.traj[ri][ci] }))), cols: rateCols('Trajectory') }}
             note="Both terms must have enrolled units for this comparison. Second-term results become available after the first advising checkpoint."
           >
-            <Heatmap rowTitle="1st semester" colTitle="2nd-semester courses passed" rowLabels={G.pCols.map((c) => c[1])} colLabels={['Passed < 50%', 'Passed ≥ 50%']} cells={G.traj} />
+            <Heatmap overall={S.dropRate} rowTitle="1st semester" colTitle="2nd-semester courses passed" rowLabels={G.pCols.map((c) => c[1])} colLabels={['Passed < 50%', 'Passed ≥ 50%']} cells={G.traj} />
           </Card>
           <Card
             title="First-term grades with and without recorded zeros"
@@ -398,6 +398,7 @@ export default function App() {
       </main>
 
       <footer className="footer">
+        <div className="graduation-trail" aria-hidden="true"><GraduationCap/></div>
         <div className="footer-in">
           <div className="brand"><Logo size={28} /><span className="brand-t"><b>Everybody Walks</b><small>Team 4 · MSA 8030 · Georgia State University · Fall 2026</small></span></div>
           <p>Student project at Georgia State University. The records describe historical outcomes at a Portuguese institution.</p>

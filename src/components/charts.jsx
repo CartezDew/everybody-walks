@@ -135,8 +135,23 @@ export function Donut({ segments, total, centerLabel, centerValue }) {
   );
 }
 
+export function rateFill(row, overall) {
+  if (row.color) return row.color;
+  return row.n && row.dropRate > overall ? 'var(--drop)' : 'var(--comparison)';
+}
+
+export function RateKey({ overall, intervals = false, separateUnits = false }) {
+  return <div className="rate-key">
+    <span><i className="key-above"/>Above cohort rate</span>
+    <span><i className="key-below"/>At or below</span>
+    {separateUnits && <span><i className="key-units"/>No enrolled units</span>}
+    <span className="key-baseline">Cohort rate <b>{pct(overall)}</b></span>
+    {intervals && <span>Whiskers show 95% intervals</span>}
+  </div>;
+}
+
 // ---------- Horizontal rate bars with 95% CI whiskers and overall reference ----------
-export function RateBars({ rows, overall, max = 1, showShare = false, color = 'var(--brand)', onSelect, selected }) {
+export function RateBars({ rows, overall, max = 1, showShare = false, onSelect, selected }) {
   const [ref, inView] = useInView();
   const { wrap, show, hide, node } = useTip();
   return (
@@ -162,7 +177,7 @@ export function RateBars({ rows, overall, max = 1, showShare = false, color = 'v
             <div className="rb-track">
               <div
                 className="rb-bar"
-                style={{ width: inView ? `${w}%` : 0, background: color, transitionDelay: `${i * 60}ms`, opacity: small ? 0.45 : 1 }}
+                style={{ width: inView ? `${w}%` : 0, background: rateFill(d, overall), transitionDelay: `${i * 60}ms`, opacity: small ? 0.45 : 1 }}
               />
               {d.n > 0 && (
                 <div
@@ -180,9 +195,7 @@ export function RateBars({ rows, overall, max = 1, showShare = false, color = 'v
         );
       })}
       {overall != null && (
-        <div className="rb-foot">
-          <span className="ref-key" /> Overall rate for current selection: {pct(overall)} · whiskers show 95% intervals
-        </div>
+        <RateKey overall={overall} intervals/>
       )}
       {node}
     </div>
@@ -221,7 +234,7 @@ export function Columns({ rows, max = 1, overall, xLabel }) {
               <div className="col-area">
                 <div
                   className="col-bar"
-                  style={{ height: inView ? `${(d.dropRate / max) * 100}%` : 0, transitionDelay: `${i * 80}ms`, opacity: small ? 0.45 : 1, background: d.color || 'var(--brand)' }}
+                  style={{ height: inView ? `${(d.dropRate / max) * 100}%` : 0, transitionDelay: `${i * 80}ms`, opacity: small ? 0.45 : 1, background: rateFill(d, overall) }}
                 >
                   <span className="col-val">{d.n ? pct(d.dropRate, 0) : '–'}</span>
                 </div>
@@ -233,6 +246,7 @@ export function Columns({ rows, max = 1, overall, xLabel }) {
         })}
       </div>
       {xLabel && <div className="axis-title">{xLabel}</div>}
+      {overall != null && <RateKey overall={overall} separateUnits={rows.some(row => row.key === 'none')}/>}
       {node}
     </div>
   );
@@ -280,10 +294,15 @@ export function StackedOutcomes({ rows, colors, names }) {
 }
 
 // ---------- Heatmap of dropout rate ----------
-const RAMP = ['#eff5ff', '#c9dcf6', '#93b6e6', '#426daa', '#0039a6', '#0a285e'];
-export const rampColor = (v) => RAMP[Math.min(RAMP.length - 1, Math.floor(v * RAMP.length))];
+const HEAT_COLORS = ['#416899', '#9fbbd9', '#dfe8f2', '#f0ecee', '#f4dfe4', '#dda1b0', '#963653'];
+function heatBand(rate, overall) {
+  const gap = rate - overall;
+  if (Math.abs(gap) < 1e-10) return 3;
+  const steps = 1 + Number(Math.abs(gap) >= .1) + Number(Math.abs(gap) >= .3);
+  return 3 + Math.sign(gap) * steps;
+}
 
-export function Heatmap({ rowLabels, colLabels, cells, rowTitle, colTitle }) {
+export function Heatmap({ rowLabels, colLabels, cells, rowTitle, colTitle, overall }) {
   const [ref, inView] = useInView();
   const { wrap, show, hide, node } = useTip();
   return (
@@ -297,14 +316,15 @@ export function Heatmap({ rowLabels, colLabels, cells, rowTitle, colTitle }) {
             <div className="heat-rh">{r}</div>
             {cells[ri].map((c, ci) => {
               const small = c.n > 0 && c.n < MIN_N;
-              const dark = c.dropRate >= 0.5;
+              const band = heatBand(c.dropRate, overall);
+              const dark = band === 0 || band === HEAT_COLORS.length - 1;
               const tip = <TipBody title={`${r} · ${colLabels[ci]}`} rows={statRows(c)} warn={small} />;
               return (
                 <div
                   key={ci}
                   className={`heat-c${small ? ' small' : ''}`}
                   style={{
-                    background: c.n ? rampColor(c.dropRate) : 'var(--surface-2)',
+                    background: c.n ? HEAT_COLORS[band] : 'var(--surface-2)',
                     color: !c.n ? 'var(--muted)' : dark ? '#fff' : '#112238',
                     transform: inView ? 'scale(1)' : 'scale(.6)',
                     opacity: inView ? 1 : 0,
@@ -324,11 +344,11 @@ export function Heatmap({ rowLabels, colLabels, cells, rowTitle, colTitle }) {
           </div>
         ))}
       </div>
-      <div className="heat-scale">
-        <span>0%</span>
-        {RAMP.map((c) => <i key={c} style={{ background: c }} />)}
-        <span>100% dropout</span>
+      <div className="heat-legend">
+        <div className="heat-scale" aria-hidden="true">{HEAT_COLORS.map(color => <i key={color} style={{ background: color }}/>)}</div>
+        <div className="heat-legend-label"><span>Below</span><b>Cohort {pct(overall)}</b><span>Above</span></div>
       </div>
+      <p className="heat-key-note">Shades deepen at 10 and 30 percentage points from the selected cohort rate.</p>
       {node}
     </div>
   );

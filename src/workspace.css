@@ -1,20 +1,20 @@
 /* The cover borrows the typography and concentric grooves of a record sleeve. */
 :root {
   --page:#f8f9fb; --surface:#fff; --surface-2:#edf1f6; --ink:#132038; --ink-2:#40536b;
-  --muted:#59697d; --grid:#dae1eb; --border:#d6dfeb; --brand:#0039a6; --grad:#0039a6;
-  --drop:#ad2e43; --enr:#287570; --muted-bar:#7c8a9e; --secondary-bar:#8ea9d5; --accent-bg:#edf3fc;
+  --muted:#59697d; --grid:#dae1eb; --border:#d6dfeb; --brand:#0039a6; --grad:#196e64; --comparison:#416899; --gold:#946416;
+  --drop:#963653; --enr:var(--gold); --muted-bar:#7c8a9e; --secondary-bar:#8ea9d5; --accent-bg:#edf3fc;
   --font:'Gill Sans','Gill Sans MT',Avenir,'Segoe UI',sans-serif; --shadow:none; --radius:12px;
 }
 :root[data-theme='dark'] {
   --page:#0f1a2b; --surface:#19263b; --surface-2:#21334d; --ink:#f7f8fc; --ink-2:#c8d4e4;
-  --brand:#a1c4ff; --grad:#83b3ff; --grid:#364761; --border:#394860; --muted:#a8b8ce;
-  --drop:#ff919d; --enr:#69c1b5; --muted-bar:#8998ad; --secondary-bar:#6585b4; --accent-bg:#1b304e;
+  --brand:#a1c4ff; --grad:#7bd3bd; --comparison:#93b3e1; --gold:#efc371; --grid:#364761; --border:#394860; --muted:#a8b8ce;
+  --drop:#f193a9; --enr:var(--gold); --muted-bar:#8998ad; --secondary-bar:#6585b4; --accent-bg:#1b304e;
 }
 @media(prefers-color-scheme:dark) {
   :root:not([data-theme='light']) {
     --page:#0f1a2b; --surface:#19263b; --surface-2:#21334d; --ink:#f7f8fc; --ink-2:#c8d4e4;
-    --brand:#a1c4ff; --grad:#83b3ff; --grid:#364761; --border:#394860; --muted:#a8b8ce;
-    --drop:#ff919d; --enr:#69c1b5; --muted-bar:#8998ad; --secondary-bar:#6585b4; --accent-bg:#1b304e;
+    --brand:#a1c4ff; --grad:#7bd3bd; --comparison:#93b3e1; --gold:#efc371; --grid:#364761; --border:#394860; --muted:#a8b8ce;
+    --drop:#f193a9; --enr:var(--gold); --muted-bar:#8998ad; --secondary-bar:#6585b4; --accent-bg:#1b304e;
   }
 }
 .topbar-in,.footer-in,.fb-inner,.fb-warn,main,.role-picker,.sleeve-in {max-width:1240px;margin-inline:auto;padding-inline:clamp(18px,4vw,56px)}
@@ -85,27 +85,44 @@
 @media print{.role-picker,.explorer-nav,.cover-action,.decision-note button{display:none}}
 @media(max-width:410px){.sleeve h1{width:calc(100% + 38px);font-size:40px}.cover-art .record{top:auto;bottom:8%;transform:translateX(-50%)}}
 
-/* One trail peeks out from behind each of the two planning surfaces. */
-.decision-grid, .recs { position: relative; isolation: isolate; }
-.decision-grid::before, .recs::before {
+/* Footprints follow the margins from the cover to the graduation cap. */
+.cover-art::after, .decision-grid::after, #academic::before, .recs::after, .graduation-trail::before {
   content: '';
-  position: absolute;
-  z-index: -1;
+  display: block;
   pointer-events: none;
-  right: 12px;
-  bottom: -34px;
-  width: 165px;
-  height: 82px;
-  background: var(--brand);
   mask: url('./components/footsteps.svg') center / contain no-repeat;
-  opacity: .18;
+  background: var(--comparison);
 }
-.recs::before { right: 8%; }
+.cover-art::after {
+  position: absolute; left: -21%; top: 12%; width: clamp(125px,16vw,225px);
+  aspect-ratio: 168/82; transform: rotate(-12deg); background: #b9d4ff; opacity: .32; z-index: -1;
+}
+.decision-grid, .recs, #academic { position: relative; }
+.decision-grid::after, .recs::after {
+  position: absolute; width: clamp(175px,19vw,252px); height: 110px;
+  right: 2%; bottom: -16px; z-index: -1; opacity: .32;
+}
+.decision-grid, .recs { isolation: isolate; padding-bottom: 62px; }
+#academic { padding-top: 85px; }
+#academic::before {
+  position: absolute; right: 5%; top: 3px; width: 198px; height: 82px; opacity: .33;
+}
+.graduation-trail {
+  display: flex; align-items: flex-start; justify-content: center; gap: 1px;
+  margin: 0 auto; padding-top: 8px; width: fit-content; position: relative;
+}
+.graduation-trail::before { width: 138px; height: 62px; opacity: .49; }
+.graduation-trail .graduation-cap { width: 34px; height: 34px; color: var(--gold); transform: rotate(-8deg); }
+.footer:has(.graduation-trail) { margin-top: 36px; }
 @media (max-width:700px) {
-  .decision-grid::before, .recs::before { width: 112px; height: 58px; bottom: -24px; right: 5px; }
+  .cover-art::after { left: -7%; top: 6%; width: 110px; }
+  .decision-grid::after, .recs::after { width: 164px; height: 78px; bottom: -5px; }
+  .decision-grid, .recs { padding-bottom: 48px; }
+  #academic { padding-top: 74px; }
+  #academic::before { width: 146px; height: 69px; right: 2%; }
 }
 @media print, (forced-colors:active) {
-  .decision-grid::before, .recs::before { display:none; }
+  .cover-art::after, .decision-grid::after, #academic::before, .recs::after, .graduation-trail { display:none; }
 }
 
 .cover-art .campus-pack {
@@ -156,3 +173,28 @@
   .outreach-table { font-size: 14px; }
   .outreach-table th, .outreach-table td { padding: 9px 3px; }
 }
+
+.rate-key { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin-top: 14px; color: var(--muted); font-size: 12px; }
+.rate-key span { display: inline-flex; align-items: center; gap: 5px; }
+.rate-key i { width: 10px; height: 7px; border-radius: 1px; }
+.key-above { background: var(--drop); }
+.key-units { background: var(--muted-bar); }
+.key-below { background: var(--comparison); }
+.key-baseline b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.kpi-label { display: flex; align-items: center; gap: 5px; }
+.graduation-cap { width: 19px; height: 19px; flex: none; color: var(--grad); }
+.kpi-value, .heat-c b { font-variant-numeric: tabular-nums; }
+.outreach-table .reach-gain { background: color-mix(in srgb, var(--gold) 9%, var(--surface)); }
+.outreach-table .reach-gain th { border-inline-start: 3px solid var(--gold); padding-inline-start: 8px; }
+.outreach-table .reach-gain td:last-child { padding-inline-end: 8px; }
+.outreach-table .reach-gain b { color: var(--ink); font: bold 1.45em/1.15 Georgia, serif; }
+.leadership-evidence .takeaway strong { color: var(--ink); }
+.st-seg { color: white; }
+:root[data-theme='dark'] .st-seg { color: var(--page); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme='light']) .st-seg { color: var(--page); } }
+
+.heat-legend { width: min(100%, 285px); margin-top: 18px; }
+.heat-legend .heat-scale { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; }
+.heat-legend .heat-scale i { width: 100%; }
+.heat-legend-label { display: flex; justify-content: space-between; color: var(--ink-2); font-size: 12px; margin-top: 4px; }
+.heat-key-note { font-size: 12px; color: var(--muted); margin: 4px 0 0; }
