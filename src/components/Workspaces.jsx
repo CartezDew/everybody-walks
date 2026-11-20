@@ -5,7 +5,7 @@ import { RateKey, rateFill } from './charts';
 import FlagBuilder from './FlagBuilder';
 
 export const ROLES = [
-  { id: 'leadership', label: 'University leadership', task: 'Allocate resources', question: 'How much would academic check-ins add to tuition outreach?' },
+  { id: 'leadership', label: 'University leadership', task: 'Allocate resources', question: 'What does a first-term check-in add?' },
   { id: 'advising', label: 'Academic advising', task: 'Plan academic check-ins', question: 'Who could benefit from a first-term check-in?' },
   { id: 'success', label: 'Student success', task: 'Coordinate support', question: 'Where do financial and academic needs overlap?' },
   { id: 'enrollment', label: 'Enrollment management', task: 'Compare programs', question: 'Which programs account for the most departures?' },
@@ -35,22 +35,43 @@ const rate = (x, n) => n ? pct(x / n) : '—';
 function Metric({ label, value, detail }) {
   return <div className="metric"><span>{label}</span><strong>{value}</strong><small>{detail}</small></div>;
 }
-function OutreachComparison({ tuition, additional, departures }) {
+function OutreachComparison({ tuition, additional, summary }) {
+  const departures = summary.dropouts;
+  const barWidth = count => departures ? pct(count / departures, 3) : '0%';
   const scenarios = [
     { label: 'Tuition behind', students: tuition.n, departures: tuition.dropouts },
     { label: 'Tuition behind or passed under half of first-term units', students: tuition.n + additional.n, departures: tuition.dropouts + additional.dropouts },
   ];
-  const finding = additional.n
-    ? <>A first-term check-in would add <strong>{num(additional.n)} students</strong> whose tuition was current. Of those, <strong>{num(additional.dropouts)}</strong> had a recorded dropout outcome.</>
-    : 'Both rules reach the same students in this selection. No additional students had current tuition and passed under half of their enrolled units.';
-  return <Card title="Two ways to plan check-ins" takeaway={finding}
-    note="Each student counts once per rule. The academic check requires first-term results. The records do not establish when tuition status was measured.">
+  return <section className="leadership-evidence" aria-label="Additional reach of academic check-ins">
+    <div className="reach-feature">
+      <div className="reach-finding">
+        <span className="reach-scope">{num(summary.n)} students in this cohort</span>
+        <h3><strong>{num(additional.dropouts)}</strong> more recorded departures covered</h3>
+        <p>{additional.n
+          ? <>That would take <b>{num(additional.n)} additional invitations</b> to students with current tuition who passed under half their first-term units.</>
+          : 'Both rules reach the same students in this selection.'}</p>
+      </div>
+      <div className="reach-plot">
+        <h3>Share of recorded departures covered</h3>
+        {scenarios.map((row, i) => <div className="reach-series" key={row.label}>
+          <div className="reach-series-head"><b>{i ? 'Tuition + first-term check-in' : 'Tuition outreach alone'}</b><strong>{rate(row.departures, departures)}</strong></div>
+          <div className="reach-track" aria-hidden="true"><i style={{width: barWidth(tuition.dropouts)}}/>{i === 1 && <i className="reach-added" style={{width: barWidth(additional.dropouts)}}/>}</div>
+          <small>{num(row.students)} invitations · {num(row.departures)} of {num(departures)} departures</small>
+        </div>)}
+        <p className="reach-change">{departures
+          ? <>Coverage gain <b>{(additional.dropouts / departures * 100).toFixed(1)} percentage points</b></>
+          : 'No recorded departures in this cohort.'}</p>
+      </div>
+    </div>
+    <details className="reach-details"><summary>View counts and calculation</summary>
     <div className="outreach-scroll"><table className="outreach-table" aria-label="Historical reach of two outreach rules">
       <thead><tr><th scope="col">Outreach rule</th><th scope="col">Students to contact</th><th scope="col">Recorded dropouts covered</th></tr></thead>
       <tbody>{scenarios.map((row, i) => <tr key={row.label} className={i === 1 && additional.dropouts > 0 ? 'reach-gain' : undefined}><th scope="row">{row.label}</th><td>{num(row.students)}</td>
         <td><b>{rate(row.departures, departures)}</b><small>{num(row.departures)} of {num(departures)} departures</small></td></tr>)}</tbody>
     </table></div>
-  </Card>;
+      <p>Coverage divides recorded departures meeting each rule by all departures in the selected cohort. Each student counts once per rule.</p>
+    </details>
+  </section>;
 }
 function Comparison({ title, rows, note, overall, count = false }) {
   const max = count ? Math.max(1, ...rows.map(r => r.dropouts)) : 1;
@@ -82,12 +103,9 @@ export function Workspace({ role, list, groups, summary: s, onExplore }) {
   let metrics, chart, action, link;
   switch(role) {
     case 'leadership':
-      metrics = <>{base}<Metric label="Dropout among students behind on tuition" value={rate(late.dropouts,late.n)} detail={`${num(late.dropouts)} of ${num(late.n)} students`}/><Metric label="Departures covered by tuition alone" value={rate(late.dropouts,s.dropouts)} detail={`${num(late.dropouts)} of ${num(s.dropouts)} recorded dropouts`}/></>;
-      chart = <div className="leadership-evidence">
-        <OutreachComparison tuition={late} additional={groups.heatTP[1][0]} departures={s.dropouts}/>
-        <Comparison overall={s.dropRate} title="Dropout rate by tuition status" rows={groups.tuition} note="The denominator includes everyone in each tuition group, including students still enrolled. Open Table for 95% Wilson intervals."/>
-      </div>;
-      action = 'Compare the extra invitations with available advising appointments. Before a pilot, check when your campus can see payment and course results. Track who accepts help and whether staff can follow up.';
+      metrics = null;
+      chart = <Comparison overall={s.dropRate} title="Dropout rate by tuition status" rows={groups.tuition} note="The denominator includes everyone in each tuition group, including students still enrolled. Open Table for 95% Wilson intervals."/>;
+      action = 'Check appointment capacity and when grades and payment records become available. First-term results arrive after the semester. The study does not date the tuition records.';
       link = 'alert'; break;
     case 'advising':
       metrics = <>{base}<Metric label="Passed under half" value={num(low.n)} detail="students with first-term results"/><Metric label="Dropout in that group" value={rate(low.dropouts,low.n)} detail={num(low.dropouts)+' recorded dropouts'}/></>;
@@ -110,7 +128,8 @@ export function Workspace({ role, list, groups, summary: s, onExplore }) {
   }
   return <section className="work-report" id="workspace" aria-labelledby="work-title">
     <span className="section-label">{profile.label}</span><h2 id="work-title" tabIndex={-1}>{profile.question}</h2>
-    {s.n ? <>{metrics && <div className="metric-strip">{metrics}</div>}<div className="decision-grid"><div className="decision-chart">{chart}</div>
-      <aside className="decision-note"><h3>What your team can do</h3><p>{action}</p><button onClick={()=>onExplore(link)}>Explore the evidence <span aria-hidden="true">↗</span></button></aside></div></> : <p className="empty-report">No matching students. Reset the cohort filters to see this workspace.</p>}
+    {s.n ? <>{role === 'leadership' && <OutreachComparison tuition={late} additional={groups.heatTP[1][0]} summary={s}/>}
+      {metrics && <div className="metric-strip">{metrics}</div>}<div className="decision-grid"><div className="decision-chart">{chart}</div>
+      <aside className="decision-note"><h3>{role === 'leadership' ? 'Before scheduling outreach' : 'What your team can do'}</h3><p>{action}</p><button onClick={()=>onExplore(link)}>{role === 'leadership' ? 'Compare outreach rules' : 'Explore the evidence'} <span aria-hidden="true">↗</span></button></aside></div></> : <p className="empty-report">No matching students. Reset the cohort filters to see this workspace.</p>}
   </section>;
 }

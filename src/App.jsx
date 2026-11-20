@@ -109,7 +109,7 @@ export default function App() {
   function go(id) {
     setMenu(false);
     setPage(['top', 'roles', 'workspace'].includes(id) ? 'workspace' : 'explorer');
-    requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView({ block: 'start' }));
+    requestAnimationFrame(() => (document.getElementById(id) || document.getElementById('main'))?.scrollIntoView({ block: 'start' }));
   }
   function chooseRole(id) {
     setRole(id);
@@ -154,12 +154,17 @@ export default function App() {
       <section className="sleeve" id="top" aria-labelledby="cover-title">
         <div className="sleeve-in">
           <div className="cover-copy">
-            <p className="cover-credit">MSA 8030 <i/> Team 4 <i/> Fall 2026</p>
-            <h1 id="cover-title">Who could use<br/>a <em>check-in?</em></h1>
-            <p className="cover-lede">When advising time is limited, where do you start? Explore how tuition and first-term progress relate to staying in college.</p>
-            <button className="cover-action" onClick={() => go('roles')}>Choose your role <span aria-hidden="true">↓</span></button>
+            <div className="cover-intro">
+              <p className="cover-credit">MSA 8030 <i/> Team 4 <i/> Fall 2026</p>
+              <h1 id="cover-title">Who could use<br/>a <em>check-in?</em></h1>
+              <p className="cover-lede">When advising time is limited, where do you start? Explore how tuition and first-term progress relate to staying in college.</p>
+            </div>
+            <div className="cover-actions">
+              <button className="cover-action" onClick={() => go('roles')}>Choose your role <span aria-hidden="true">↓</span></button>
+              <button className="cover-action cover-secondary" onClick={() => go('overview')}>Explore student outcomes <span aria-hidden="true">→</span></button>
+            </div>
           </div>
-          <div className="cover-art" aria-hidden="true"><div className="record"/><img className="cover-mascot" src="varsity-bear.webp" alt="" width="760" height="760" fetchPriority="high"/><img className="campus-pack" src="campus-backpack.webp" alt="" width="240" height="240"/></div>
+          <div className="cover-art" aria-hidden="true"><div className="record"/><img className="cover-mascot" src="varsity-bear.webp" alt="" width="760" height="760" fetchPriority="high"/></div>
         </div>
       </section>
       <div className="source-line"><span>Study cohort</span><b>{num(all.n)} students</b><i/>One Portuguese institution<i/>2008/09–2018/19</div>
@@ -398,10 +403,9 @@ export default function App() {
       </main>
 
       <footer className="footer">
-        <div className="graduation-trail" aria-hidden="true"><GraduationCap/></div>
         <div className="footer-in">
           <div className="brand"><Logo size={28} /><span className="brand-t"><b>Everybody Walks</b><small>Team 4 · MSA 8030 · Georgia State University · Fall 2026</small></span></div>
-          <p>Student project at Georgia State University. The records describe historical outcomes at a Portuguese institution.</p>
+          <p className="footer-credit"><GraduationCap/><span>Student project at Georgia State University. The records describe historical outcomes at a Portuguese institution.</span></p>
         </div>
       </footer>
     </>
