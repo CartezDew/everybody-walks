@@ -2,38 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { DataTable } from './charts.jsx';
 import { useInView } from './charts.jsx';
 
-// ---------- Logo: an original teddy bear in a graduation cap ----------
-export function Logo({ size = 36 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 48 48" aria-hidden="true" className="logo-mark">
-      <circle cx="13.5" cy="20" r="5.5" fill="#8a5a3b" /><circle cx="13.5" cy="20" r="2.8" fill="#e3c39d" />
-      <circle cx="34.5" cy="20" r="5.5" fill="#8a5a3b" /><circle cx="34.5" cy="20" r="2.8" fill="#e3c39d" />
-      <circle cx="24" cy="28" r="13" fill="#8a5a3b" />
-      <ellipse cx="24" cy="33" rx="6.2" ry="4.8" fill="#e3c39d" /><ellipse cx="24" cy="30.8" rx="2.5" ry="1.8" fill="#2b1a10" />
-      <path d="M24 32.4v1.8M21.6 34.6c1.3 1.1 3.5 1.1 4.8 0" fill="none" stroke="#2b1a10" strokeWidth="1.2" strokeLinecap="round" />
-      <circle cx="19" cy="25.5" r="1.7" fill="#2b1a10" /><circle cx="29" cy="25.5" r="1.7" fill="#2b1a10" />
-      <path d="M16.5 15.5v3.6c0 1.6 3.4 2.7 7.5 2.7s7.5-1.1 7.5-2.7v-3.6z" fill="#001b4d" />
-      <path d="M9 13.5 24 7l15 6.5L24 20z" fill="#001b4d" />
-      <path d="M39 13.5v8" stroke="#f2a93b" strokeWidth="1.6" strokeLinecap="round" /><circle cx="39" cy="22.5" r="1.8" fill="#f2a93b" />
-    </svg>
-  );
-}
-
-// ---------- Animated ribbon (marquee of headline facts) ----------
-export function Ribbon({ items }) {
-  const list = [...items, ...items];
-  return (
-    <div className="ribbon" role="region" aria-label="Headline facts">
-      <div className="ribbon-track">
-        {list.map((t, i) => (
-          <span key={i} className="ribbon-item" aria-hidden={i >= items.length}>
-            <i className="ribbon-dot" />
-            {t}
-          </span>
-        ))}
-      </div>
-    </div>
-  );
+export function Logo({ size = 40 }) {
+  return <img className="logo-mark" src="bear-mark.png" width={size} height={size} alt="" />;
 }
 
 // ---------- Count-up number ----------
@@ -114,7 +84,7 @@ function Select({ label, value, options, onChange }) {
   return (
     <label className={`fl${value !== 'All' ? ' active' : ''}`}>
       <span>{label}</span>
-      <select value={value} onChange={(e) => onChange(e.target.value)}>
+      <select aria-label={label} value={value} onChange={(e) => onChange(e.target.value)}>
         {options.map((o) => <option key={o} value={o}>{o === 'All' ? `All` : o}</option>)}
       </select>
     </label>

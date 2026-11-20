@@ -61,8 +61,8 @@ export default function FlagBuilder({ students }) {
       <div className="flag-results" aria-live="polite">
         <div className="meters">
           <Meter label="Outreach workload" hint="share of students flagged" value={res.workload} color="var(--grad)" inView={inView} big={`${num(res.f.n)} students`} />
-          <Meter label="Dropouts caught" hint="share of all dropouts who were flagged" value={res.coverage} color="var(--drop)" inView={inView} big={`${num(res.f.dropouts)} of ${num(res.all.dropouts)}`} />
-          <Meter label="Hit rate" hint="flagged students who dropped out" value={res.precision} color="var(--enr)" inView={inView} big={res.f.n ? `${res.lift.toFixed(1)}× the average` : '–'} />
+          <Meter label="Coverage of recorded dropouts" hint="share of all dropouts who were flagged" value={res.coverage} color="var(--drop)" inView={inView} big={`${num(res.f.dropouts)} of ${num(res.all.dropouts)}`} />
+          <Meter label="Dropout among flagged students" hint="flagged students who dropped out" value={res.precision} color="var(--enr)" inView={inView} big={res.f.n ? `${res.lift.toFixed(1)}× the average` : '–'} />
         </div>
         <div className="flag-compare">
           <div>
@@ -79,9 +79,8 @@ export default function FlagBuilder({ students }) {
         <p className="flag-read">
           {res.active.length === 0
             ? 'Turn on at least one sign to build an early-alert list.'
-            : `Contacting ${pct(res.workload, 0)} of students would reach ${pct(res.coverage, 0)} of the students who later dropped out. ${
-                res.coverage < 0.5 ? 'Most dropouts would be missed, so add a sign.' : res.workload > 0.5 ? 'The list is large, so consider a stricter threshold.' : 'This is a practical size for an advising team.'
-              }`}
+            : `This rule selects ${num(res.f.n)} of ${num(res.all.n)} students. Of the ${num(res.all.dropouts)} recorded dropouts in this cohort, ${num(res.f.dropouts)} met the rule. Compare the group size with your available appointments.`}
+
         </p>
       </div>
     </div>

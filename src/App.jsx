@@ -4,7 +4,8 @@ import {
   applyFilters, summarize, groupRates, pct, num,
 } from './lib/data.js';
 import { Donut, RateBars, Columns, StackedOutcomes, Heatmap, CourseScatter, rateCols } from './components/charts.jsx';
-import { Logo, Ribbon, Kpi, Card, Section, FilterBar } from './components/ui.jsx';
+import { Logo, Kpi, Card, Section, FilterBar } from './components/ui.jsx';
+import { RolePicker, Workspace } from './components/Workspaces.jsx';
 import FlagBuilder from './components/FlagBuilder.jsx';
 
 const OUTCOME_COLORS = ['var(--drop)', 'var(--enr)', 'var(--grad)'];
@@ -89,8 +90,8 @@ export default function App() {
     const hiPass = (s) => s.pass1 !== null && s.pass1 >= 0.5;
     const pCols = [[lowPass, 'Passed < 50%'], [hiPass, 'Passed ≥ 50%']];
     const heatTP = tRows.map(([rf]) => pCols.map(([cf]) => cell(list, (s) => rf(s) && cf(s))));
-    const low2 = (s) => s.pass2 === null || s.pass2 < 0.5;
-    const traj = pCols.map(([rf]) => [cell(list, (s) => rf(s) && low2(s)), cell(list, (s) => rf(s) && !low2(s))]);
+    const low2 = (s) => s.pass2 !== null && s.pass2 < 0.5;
+    const traj = pCols.map(([rf]) => [cell(list, (s) => rf(s) && low2(s)), cell(list, (s) => rf(s) && s.pass2 !== null && s.pass2 >= 0.5)]);
 
     // grade distortion
     const mean = (a) => (a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0);
@@ -102,34 +103,39 @@ export default function App() {
     return { tuition, debtor, scholar, bands, bands2, age, gender, attend, displaced, courses, coursesAll, app, marital, special, intl, adm, unemp, heatTS, heatTP, traj, grades, tRows, scCols, pCols };
   }, [list, filters]);
 
-  const ribbon = [
-    `${pct(all.dropRate)} of ${num(all.n)} students dropped out`,
-    `Tuition not up to date: ${pct(H.t[0].dropRate)} dropout vs ${pct(H.t[1].dropRate)}`,
-    `Scholarship holders: ${pct(H.sc[0].dropRate)} vs ${pct(H.sc[1].dropRate)} without`,
-    `Debtors: ${pct(H.d[0].dropRate)} vs ${pct(H.d[1].dropRate)}`,
-    'Passed under half of 1st-semester courses: 84.8% dropout',
-    'Data: UCI ML Repository · Realinho et al. (2022)',
-  ];
-
-  const tuitionMax = Math.max(1, ...G.tuition.map((r) => r.ci[1]));
-  const go = (id) => { setMenu(false); document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+  const tuitionMax = 1;
+  const [role, setRole] = useState('leadership');
+  const [page, setPage] = useState(() => NAV.some(([id]) => '#'+id === location.hash) ? 'explorer' : 'workspace');
+  function go(id) {
+    setMenu(false);
+    setPage(['top', 'roles', 'workspace'].includes(id) ? 'workspace' : 'explorer');
+    requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView({ block: 'start' }));
+  }
+  function chooseRole(id) {
+    setRole(id);
+    setPage('workspace');
+    requestAnimationFrame(() => document.getElementById('work-title')?.focus({ preventScroll: true }));
+    if (window.matchMedia('(max-width: 700px)').matches) requestAnimationFrame(() => document.getElementById('workspace')?.scrollIntoView({block:'start'}));
+  }
   const filterNote = Object.values(filters).some((v) => v !== 'All') ? ' (current filter)' : '';
 
   return (
     <>
       <a href="#main" className="skip">Skip to content</a>
-      <Ribbon items={ribbon} />
+
       <header className="topbar">
         <div className="topbar-in">
-          <a className="brand" href="#top" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
+          <a className="brand" href="#top" onClick={(e) => { e.preventDefault(); go('top'); }}>
             <Logo />
             <span className="brand-t">
-              <b>The College Drop-In</b>
-              <small>Stay on track for Graduation</small>
+              <b>The College Stay-In</b>
+              <small>Student retention dashboard</small>
             </span>
           </a>
           <nav className={`nav${menu ? ' open' : ''}`} aria-label="Sections">
-            {NAV.map(([id, l]) => <button key={id} onClick={() => go(id)}>{l}</button>)}
+            <button onClick={() => go('roles')} aria-current={page==='workspace' ? 'page' : undefined}>Workspaces</button>
+            <button onClick={() => go('overview')}>Data explorer</button>
+            <button onClick={() => go('methods')}>Methods</button>
           </nav>
           <div className="topbar-act">
             <button
@@ -145,21 +151,19 @@ export default function App() {
         </div>
       </header>
 
-      <div className="hero" id="top">
-        <div className="hero-bg" aria-hidden="true"><i /><i /><i /></div>
-        <div className="hero-in">
-          <div className="hero-badge">MSA 8030 · Team 4</div>
-          <h1>Catch the signs. <span>Keep the student.</span></h1>
-          <p className="hero-lede">
-            Behind on tuition: <b>{pct(H.t[0].dropRate)}</b> dropped out. Paid on time: <b>{pct(H.t[1].dropRate)}</b>.
-          </p>
-          <div className="hero-cta">
-            <button className="btn" onClick={() => go('overview')}>See the data</button>
-            <button className="btn btn-ghost-light" onClick={() => go('alert')}>Build an alert list →</button>
+      <section className="sleeve" id="top" aria-labelledby="cover-title">
+        <div className="sleeve-in">
+          <div className="cover-copy">
+            <p className="cover-credit">MSA 8030 <i/> Team 4 <i/> Fall 2026</p>
+            <h1 id="cover-title">Who could use<br/>a <em>check-in?</em></h1>
+            <p className="cover-lede">When advising time is limited, where do you start? Explore how tuition and first-term progress relate to staying in college.</p>
+            <button className="cover-action" onClick={() => go('roles')}>Choose your role <span aria-hidden="true">↓</span></button>
           </div>
+          <div className="cover-art" aria-hidden="true"><div className="record"/><img src="stay-in-bear.webp" alt="" width="760" height="760" fetchPriority="high"/></div>
         </div>
-      </div>
-
+      </section>
+      <div className="source-line"><span>Study cohort</span><b>{num(all.n)} students</b><i/>One Portuguese institution<i/>2008/09–2018/19</div>
+      <RolePicker role={page==='workspace' ? role : null} onSelect={chooseRole}/>
       <FilterBar
         filters={filters}
         setFilters={setFilters}
@@ -170,13 +174,15 @@ export default function App() {
       />
 
       <main id="main">
-        <Section id="overview" kicker="01 · The problem" title="One in three students leaves without a degree" intro="Outcomes are recorded at the end of each student's normal program length. 'Enrolled' means the student was still studying, which is neither a graduation nor a dropout.">
+        {page==='workspace' ? <Workspace role={role} list={list} groups={G} summary={S} onExplore={go}/> : <>
+        <nav className="explorer-nav" aria-label="Evidence sections">{NAV.map(([id,label])=><button key={id} onClick={()=>go(id)}>{label}</button>)}</nav>
+        <Section id="overview" kicker="01 · The problem" title="Student outcomes in the selected cohort" intro="Outcomes are recorded at the end of each student's normal program length. 'Enrolled' means the student was still studying, which is neither a graduation nor a dropout.">
           <div className="kpis wide">
             <Kpi label="Students" value={S.n} format={(v) => num(Math.round(v))} sub={filterNote ? 'in current selection' : 'enrolled 2008–2019 cohorts'} accent="var(--ink-2)" />
             <Kpi label="Dropout rate" value={S.dropRate} format={(v) => pct(v)} sub={S.n ? `95% CI ${pct(S.ci[0])}–${pct(S.ci[1])}` : '–'} accent="var(--drop)" />
             <Kpi label="Graduation rate" value={S.gradRate} format={(v) => pct(v)} sub={`${num(S.graduates)} graduates`} accent="var(--grad)" />
             <Kpi label="Still enrolled" value={S.enrRate} format={(v) => pct(v)} sub={`${num(S.enrolled)} unresolved`} accent="var(--enr)" />
-            <Kpi label="Dropouts" value={S.dropouts} format={(v) => num(Math.round(v))} sub="students lost" accent="var(--drop)" />
+            <Kpi label="Dropouts" value={S.dropouts} format={(v) => num(Math.round(v))} sub="recorded departures" accent="var(--drop)" />
           </div>
           <Card
             title={`Student outcomes${filterNote}`}
@@ -194,9 +200,9 @@ export default function App() {
               ]}
             />
           </Card>
-          <Card title="How to read this dashboard" takeaway="The page starts with a guided story and ends with open exploration.">
+          <Card title="How to read this dashboard" takeaway="Use the sections above to compare outcomes and try an outreach rule.">
             <ol className="howto">
-              <li><b>Filters</b> at the top change every chart, number, and interval on the page.</li>
+              <li><b>Filters</b> change the cohort used for the charts. Recommendations refer to the full study.</li>
               <li><b>Hover or tap</b> any bar, bubble, or cell to see counts, rates, and the 95% interval.</li>
               <li><b>Table</b> switches any chart to its underlying numbers for screen readers or export.</li>
               <li><b>Faded bars and ⚠</b> mark groups under 30 students, where the rates are unstable.</li>
@@ -205,11 +211,11 @@ export default function App() {
           </Card>
         </Section>
 
-        <Section id="money" kicker="02 · Main story" title="Financial strain is the clearest warning sign" intro="Three financial fields the university already records each show a large gap in dropout rates.">
+        <Section id="money" kicker="02 · Main story" title="How do outcomes vary with financial strain?" intro="Three financial fields the university already records each show a large gap in dropout rates.">
           <Card
             wide
             title="Dropout rate by tuition status"
-            takeaway={G.tuition[0].n && G.tuition[1].n ? `Students behind on tuition dropped out at ${pct(G.tuition[0].dropRate)}, ${(G.tuition[0].dropRate / Math.max(G.tuition[1].dropRate, 0.001)).toFixed(1)}× the rate of students who were current. They are still only ${pct(G.tuition[0].share, 0)} of all dropouts.` : 'Not enough students in both groups for this selection.'}
+            takeaway={G.tuition[0].n && G.tuition[1].n ? `Students behind on tuition dropped out at ${pct(G.tuition[0].dropRate)} compared with ${pct(G.tuition[1].dropRate)} for students whose tuition was current.` : 'Not enough students in both groups for this selection.'}
             table={{ rows: G.tuition, cols: [...rateCols('Tuition status'), { k: 'share', h: 'Share of dropouts', num: true, f: (r) => pct(r.share) }] }}
             note="The 'share of dropouts' label is the trade-off: most dropouts were current on tuition, so a tuition-only alert misses most of them. The academic signs in the next section fill that gap."
           >
@@ -217,7 +223,7 @@ export default function App() {
           </Card>
           <Card
             title="Outcomes by scholarship status"
-            takeaway={G.scholar[0].n ? `${pct(G.scholar[0].dropRate)} of scholarship holders dropped out, compared with ${pct(G.scholar[1].dropRate)} of other students.` : ''}
+            takeaway={G.scholar[0].n && G.scholar[1].n ? `${pct(G.scholar[0].dropRate)} of scholarship holders dropped out, compared with ${pct(G.scholar[1].dropRate)} of other students.` : ''}
             table={{ rows: G.scholar, cols: rateCols('Scholarship') }}
             note="Scholarships may go to students who were already stronger, so this difference does not show that scholarships cause students to stay."
           >
@@ -225,7 +231,7 @@ export default function App() {
           </Card>
           <Card
             title="Dropout rate by debtor status"
-            takeaway={G.debtor[0].n ? `Students with outstanding debt dropped out at ${pct(G.debtor[0].dropRate)}, compared with ${pct(G.debtor[1].dropRate)}.` : ''}
+            takeaway={G.debtor[0].n && G.debtor[1].n ? `Students with outstanding debt dropped out at ${pct(G.debtor[0].dropRate)}, compared with ${pct(G.debtor[1].dropRate)}.` : ''}
             table={{ rows: G.debtor, cols: rateCols('Debtor') }}
             note="Debtor and tuition status are separate fields and should not be merged."
           >
@@ -234,18 +240,18 @@ export default function App() {
           <Card
             wide
             title="Tuition × scholarship: the two together"
-            takeaway={G.heatTS[0][0].n ? `Behind on tuition with no scholarship: ${pct(G.heatTS[0][0].dropRate)} dropout. Current with a scholarship: ${pct(G.heatTS[1][1].dropRate)}.` : ''}
+            takeaway={G.heatTS[0][0].n && G.heatTS[1][1].n ? `Behind on tuition with no scholarship: ${pct(G.heatTS[0][0].dropRate)} dropout. Current with a scholarship: ${pct(G.heatTS[1][1].dropRate)}.` : ''}
             table={{ rows: G.tRows.flatMap(([, r], ri) => G.scCols.map(([, c], ci) => ({ label: `${r} · ${c}`, ...G.heatTS[ri][ci] }))), cols: rateCols('Tuition · Scholarship') }}
           >
             <Heatmap rowTitle="Tuition" colTitle="Scholarship" rowLabels={G.tRows.map((r) => r[1])} colLabels={G.scCols.map((c) => c[1])} cells={G.heatTS} />
           </Card>
         </Section>
 
-        <Section id="academic" kicker="03 · Closing the gap" title="First-semester results catch the dropouts that money misses" intro="Most dropouts were current on tuition. The share of first-semester courses a student passed is a second signal, available once the first semester ends.">
+        <Section id="academic" kicker="03 · Closing the gap" title="How does first-term progress relate to dropout?" intro="Most dropouts were current on tuition. The share of first-semester courses a student passed is a second signal, available once the first semester ends.">
           <Card
             wide
             title="Dropout rate by share of 1st-semester courses passed"
-            takeaway={G.bands[0].n ? `Students who passed no first-semester courses dropped out at ${pct(G.bands[0].dropRate)}. Students who passed every course dropped out at ${pct(G.bands[3].dropRate)}.` : ''}
+            takeaway={G.bands[0].n && G.bands[3].n ? `Students who passed no first-semester courses dropped out at ${pct(G.bands[0].dropRate)}. Students who passed every course dropped out at ${pct(G.bands[3].dropRate)}.` : ''}
             table={{ rows: G.bands, cols: rateCols('Courses passed') }}
             note="'No units' marks students who enrolled in no first-semester units (for example, credited transfers). They are shown separately and kept out of the pass-rate bands."
           >
@@ -253,16 +259,16 @@ export default function App() {
           </Card>
           <Card
             title="Both warning signs together"
-            takeaway={G.heatTP[0][0].n ? `Students with both signs dropped out at ${pct(G.heatTP[0][0].dropRate)}. Students with neither sign dropped out at ${pct(G.heatTP[1][1].dropRate)}.` : ''}
+            takeaway={G.heatTP[0][0].n && G.heatTP[1][1].n ? `Students with both signs dropped out at ${pct(G.heatTP[0][0].dropRate)}. Students with neither sign dropped out at ${pct(G.heatTP[1][1].dropRate)}.` : ''}
             table={{ rows: G.tRows.flatMap(([, r], ri) => G.pCols.map(([, c], ci) => ({ label: `${r} · ${c}`, ...G.heatTP[ri][ci] }))), cols: rateCols('Tuition · 1st-sem') }}
           >
             <Heatmap rowTitle="Tuition" colTitle="1st-semester courses passed" rowLabels={G.tRows.map((r) => r[1])} colLabels={G.pCols.map((c) => c[1])} cells={G.heatTP} />
           </Card>
           <Card
-            title="New: recovery in the 2nd semester"
-            takeaway={G.traj[0][1].n ? `Students who struggled in the first semester but passed at least half in the second dropped out at ${pct(G.traj[0][1].dropRate)}. Those who kept struggling dropped out at ${pct(G.traj[0][0].dropRate)}.` : ''}
+            title="Second-term progress"
+            takeaway={G.traj[0][1].n && G.traj[0][0].n ? `Students who struggled in the first semester but passed at least half in the second dropped out at ${pct(G.traj[0][1].dropRate)}. Those who kept struggling dropped out at ${pct(G.traj[0][0].dropRate)}.` : ''}
             table={{ rows: G.pCols.flatMap(([, r], ri) => ['2nd < 50%', '2nd ≥ 50%'].map((c, ci) => ({ label: `1st ${r} · ${c}`, ...G.traj[ri][ci] }))), cols: rateCols('Trajectory') }}
-            note="Few struggling students recover (see n). A check-in after the first semester gives advisors a whole term to change that."
+            note="Both terms must have enrolled units for this comparison. Second-term results become available after the first advising checkpoint."
           >
             <Heatmap rowTitle="1st semester" colTitle="2nd-semester courses passed" rowLabels={G.pCols.map((c) => c[1])} colLabels={['Passed < 50%', 'Passed ≥ 50%']} cells={G.traj} />
           </Card>
@@ -286,7 +292,7 @@ export default function App() {
           </Card>
         </Section>
 
-        <Section id="alert" kicker="04 · Interactive" title="Build your own early-alert list" intro="Pick the signs your office would act on. The meters show how many students you would contact, how many future dropouts that list would catch, and how often a flag is correct. The filters at the top still apply.">
+        <Section id="alert" kicker="04 · Interactive" title="Build your own early-alert list" intro="Pick the signs your office would act on. The meters show how many students you would contact, what share of recorded dropouts met the rule, and what share of the selected group dropped out. The filters at the top still apply.">
           <Card wide title="Early-alert builder" takeaway="Each extra sign catches more dropouts but makes the list longer. Choose the balance your advising capacity can handle.">
             <FlagBuilder students={list} />
           </Card>
@@ -307,20 +313,20 @@ export default function App() {
           <Card title="By gender and attendance" takeaway="Men and evening students dropped out at higher rates. The data does not record why." table={{ rows: [...G.gender, ...G.attend], cols: rateCols('Group') }} note="Describe these as groups that need support, not as students who are likely to fail.">
             <RateBars rows={[...G.gender, ...G.attend]} overall={S.dropRate} />
           </Card>
-          <Card title="New: how students were admitted" takeaway="Students admitted through the 'Over 23 years old' route and from other higher-education courses had the highest dropout rates." table={{ rows: G.app, cols: rateCols('Application mode') }}>
+          <Card title="How students were admitted" takeaway="Students admitted through the 'Over 23 years old' route and from other higher-education courses had the highest dropout rates." table={{ rows: G.app, cols: rateCols('Application mode') }}>
             <RateBars rows={G.app} overall={S.dropRate} />
           </Card>
-          <Card title="New: displaced students" takeaway={G.displaced[0].n ? `Students who moved away from home to study dropped out less often (${pct(G.displaced[0].dropRate)} vs ${pct(G.displaced[1].dropRate)}). This may reflect age, since older and working students tend to stay home.` : ''} table={{ rows: G.displaced, cols: rateCols('Displaced') }}>
+          <Card title="Moving for study" takeaway={G.displaced[0].n && G.displaced[1].n ? `Students who moved away from home to study had a recorded dropout rate of ${pct(G.displaced[0].dropRate)} vs ${pct(G.displaced[1].dropRate)} for other students.` : ''} table={{ rows: G.displaced, cols: rateCols('Displaced') }}>
             <RateBars rows={G.displaced} overall={S.dropRate} />
           </Card>
         </Section>
 
         <Section id="more" kicker="06 · Beyond the proposal" title="More signals we tested" intro="Some fields show clear patterns. Others show no consistent pattern, and reporting those keeps the main story honest.">
           <Card title="Admission grade (fifths of all students)" takeaway={G.adm[0].n ? `The lowest fifth of admission grades had the highest dropout rate (${pct(G.adm[0].dropRate)}). Above that, the rate levels off.` : ''} table={{ rows: G.adm, cols: rateCols('Admission grade') }}>
-            <Columns rows={G.adm} overall={S.dropRate} max={0.8} xLabel="Admission grade quintile (low → high)" />
+            <Columns rows={G.adm} overall={S.dropRate} xLabel="Admission grade quintile (low → high)" />
           </Card>
           <Card title="Unemployment rate when the student enrolled" takeaway="No consistent trend. Dropout rises and falls across economic conditions, so the economy does not explain much on its own." table={{ rows: G.unemp, cols: rateCols('Unemployment') }} note="Each value is one enrollment cohort's national rate, so this compares cohorts rather than individual students.">
-            <Columns rows={G.unemp} overall={S.dropRate} max={0.6} xLabel="Portugal unemployment rate at enrollment" />
+            <Columns rows={G.unemp} overall={S.dropRate} xLabel="Portugal unemployment rate at enrollment" />
           </Card>
           <Card title="Marital status" takeaway="Married and divorced students dropped out more often. These groups overlap heavily with older students." table={{ rows: G.marital, cols: rateCols('Marital status') }}>
             <RateBars rows={G.marital} overall={S.dropRate} />
@@ -351,7 +357,7 @@ export default function App() {
         <Section id="methods" kicker="08 · Transparency" title="Data, methods, and limitations">
           <Card title="Data source">
             <ul className="plain">
-              <li><b>Dataset:</b> Predict Students' Dropout and Academic Success, UCI Machine Learning Repository. <a href="https://doi.org/10.24432/C5MC89" target="_blank" rel="noreferrer">DOI 10.24432/C5MC89</a></li>
+              <li><b>Dataset:</b> Predict Students' Dropout and Academic Success, UCI Machine Learning Repository. <a href="https://doi.org/10.24432/C5MC89" target="_blank" rel="noreferrer">DOI 10.24432/C5MC89</a>. Decoded and adapted under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.</li>
               <li><b>Paper:</b> Realinho, V., Machado, J., Baptista, L., &amp; Martins, M. V. (2022). <i>Data</i>, 7(11), 146. <a href="https://doi.org/10.3390/data7110146" target="_blank" rel="noreferrer">DOI 10.3390/data7110146</a></li>
               <li><b>Unit:</b> one row per student ({num(all.n)} students), from one Portuguese higher-education institution, academic years 2008/09 to 2018/19.</li>
               <li><b>Collected from:</b> the institution's academic and administrative records, plus national macroeconomic data.</li>
@@ -377,21 +383,22 @@ export default function App() {
               <li>Nationality and parent education/occupation remain numeric codes and are not analyzed here.</li>
             </ul>
           </Card>
-          <Card title="Team and AI use">
+          <Card title="Behind The College Stay-In" takeaway="Our name is a nod to The College Dropout. We flipped the question around: what would help a student stay? The varsity bear carries that idea through the project.">
             <ul className="plain">
               <li><b>Merachew Gebremariam:</b> topic, proposal, number verification, poster text.</li>
               <li><b>Cartez Dewberry:</b> project plan, dashboard design and build, poster production.</li>
               <li><b>Carson Johnston:</b> decoded dataset, presentation, review and submission.</li>
-              <li><b>AI disclosure:</b> Claude (Anthropic) helped write the dashboard code. The team checked every figure against the decoded dataset and the project plan's verified numbers.</li>
+              <li><b>AI disclosure:</b> The team used AI assistance for coding, visual design and the illustrated mascot. Chart values are calculated from the decoded dataset.</li>
             </ul>
           </Card>
         </Section>
+        </>}
       </main>
 
       <footer className="footer">
         <div className="footer-in">
-          <div className="brand"><Logo size={28} /><span className="brand-t"><b>The College Drop-In</b><small>Team 4 · MSA 8030 · Georgia State University · Fall 2026</small></span></div>
-          <p>Built with React. All data is processed in your browser. Figures describe historical associations, not predictions about individual students.</p>
+          <div className="brand"><Logo size={28} /><span className="brand-t"><b>The College Stay-In</b><small>Team 4 · MSA 8030 · Georgia State University · Fall 2026</small></span></div>
+          <p>Student project at Georgia State University. The records describe historical outcomes at a Portuguese institution.</p>
         </div>
       </footer>
     </>
