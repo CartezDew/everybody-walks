@@ -8,6 +8,7 @@ import { Logo, GraduationCap, Kpi, Card, Section, FilterBar } from './components
 import { RolePicker, Workspace } from './components/Workspaces.jsx';
 import FlagBuilder from './components/FlagBuilder.jsx';
 import ExplorerNav from './components/ExplorerNav';
+import AIInsights from './components/AIInsights';
 
 const OUTCOME_COLORS = ['var(--drop)', 'var(--enr)', 'var(--grad)'];
 const OUTCOME_NAMES = ['Dropout', 'Enrolled', 'Graduate'];
@@ -18,6 +19,7 @@ const NAV = [
   ['alert', 'Alert builder'],
   ['who', 'Who leaves'],
   ['more', 'More signals'],
+  ['insights', 'AI Insights'],
   ['act', 'Recommendations'],
   ['methods', 'Methods'],
 ];
@@ -115,6 +117,12 @@ export default function App() {
   const tuitionMax = 1;
   const [role, setRole] = useState('leadership');
   const [page, setPage] = useState(() => NAV.some(([id]) => '#'+id === location.hash) ? 'explorer' : 'workspace');
+  useEffect(() => {
+    const target = NAV.find(([id]) => '#' + id === window.location.hash);
+    if (!target) return;
+    const frame = requestAnimationFrame(() => document.getElementById(target[0])?.scrollIntoView({ block: 'start' }));
+    return () => cancelAnimationFrame(frame);
+  }, []);
   function go(id) {
     setMenu(false);
     setPage(['top', 'roles', 'workspace'].includes(id) ? 'workspace' : 'explorer');
@@ -362,6 +370,7 @@ export default function App() {
         </Section>
 
         </>}
+        <AIInsights students={list}/>
         <Section id="act" kicker="07 · What to do" title="Recommendations" intro="These suggestions use the full study cohort, across all filter settings. A campus pilot would be needed to learn whether outreach helps.">
           <div className="recs wide">
             {[
@@ -414,7 +423,7 @@ export default function App() {
               <li><b>Merachew Gebremariam:</b> topic, proposal, number verification, poster text.</li>
               <li><b>Cartez Dewberry:</b> project plan, dashboard design and build, poster production.</li>
               <li><b>Carson Johnston:</b> decoded dataset, presentation, review and submission.</li>
-              <li><b>AI disclosure:</b> The team used AI assistance for coding, visual design, the mascot and the graduation illustration. Chart values are calculated from the decoded dataset.</li>
+              <li><b>AI disclosure:</b> The team used AI assistance for coding, illustrations and the comparisons in AI Insights. Your browser calculates the counts and rates from the selected cohort. The suggested pilots have not been tested in this study.</li>
             </ul>
           </Card>
         </Section>

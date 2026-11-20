@@ -7,6 +7,7 @@ const icons = {
   alert: 'M3 6h7m4 0h7M3 12h12m4 0h2M3 18h2m4 0h12 M10 3v6m5 0v6m-9 0v6',
   who: 'M3 20v-3q0-4 6-4t6 4v3 M12 7a3 3 0 1 1-6 0 3 3 0 1 1 6 0 M16 5q5 1 2 6m-1 3q4 0 4 5',
   more: 'M3 20h18 M5 16v-4m5 4V8m5 8v-6m5 6V4',
+  insights: 'm10 3 2.1 5.9L18 11l-5.9 2.1L10 19l-2.1-5.9L2 11l5.9-2.1z M19 2v5m-2.5-2.5h5 M19 16v5m-2.5-2.5h5',
   act: 'm3 6 2 2 4-5 M12 6h9 M3 13l2 2 4-5 M12 13h9 M12 20h9',
   methods: 'M5 2h9l5 5v15H5z M14 2v6h5 M8 12h8m-8 4h8',
 };
@@ -16,7 +17,7 @@ export default function ExplorerNav({ items, go, hasData }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [current, setCurrent] = useState('overview');
   const toggle = useRef(null);
-  const enabled = id => hasData || ['overview','act','methods'].includes(id);
+  const enabled = id => hasData || ['overview','insights','act','methods'].includes(id);
 
   useLayoutEffect(() => {
     const filter = document.querySelector('.filterbar');
