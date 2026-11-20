@@ -84,3 +84,26 @@
 @media(max-width:410px){.cover-lede{max-width:220px}.source-line{justify-content:flex-start}.source-line span{display:none}.work-report h2{font-size:29px}.role-options small{display:none}}
 @media print{.role-picker,.explorer-nav,.cover-action,.decision-note button{display:none}}
 @media(max-width:410px){.sleeve h1{width:calc(100% + 38px);font-size:40px}.cover-art .record{top:auto;bottom:8%;transform:translateX(-50%)}}
+
+/* One trail peeks out from behind each of the two planning surfaces. */
+.decision-grid, .recs { position: relative; isolation: isolate; }
+.decision-grid::before, .recs::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  right: 12px;
+  bottom: -34px;
+  width: 165px;
+  height: 82px;
+  background: var(--brand);
+  mask: url('./components/footsteps.svg') center / contain no-repeat;
+  opacity: .18;
+}
+.recs::before { right: 8%; }
+@media (max-width:700px) {
+  .decision-grid::before, .recs::before { width: 112px; height: 58px; bottom: -24px; right: 5px; }
+}
+@media print, (forced-colors:active) {
+  .decision-grid::before, .recs::before { display:none; }
+}

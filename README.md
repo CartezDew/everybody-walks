@@ -1,4 +1,4 @@
-# The College Stay-In: Student Retention Dashboard
+# Everybody Walks: Student Retention Dashboard
 
 MSA 8030 Communicating with Data · Team 4 (Merachew Gebremariam, Cartez Dewberry, Carson Johnston)
 

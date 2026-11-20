@@ -128,7 +128,7 @@ export default function App() {
           <a className="brand" href="#top" onClick={(e) => { e.preventDefault(); go('top'); }}>
             <Logo />
             <span className="brand-t">
-              <b>The College Stay-In</b>
+              <b>Everybody Walks</b>
               <small>Student retention dashboard</small>
             </span>
           </a>
@@ -159,7 +159,7 @@ export default function App() {
             <p className="cover-lede">When advising time is limited, where do you start? Explore how tuition and first-term progress relate to staying in college.</p>
             <button className="cover-action" onClick={() => go('roles')}>Choose your role <span aria-hidden="true">↓</span></button>
           </div>
-          <div className="cover-art" aria-hidden="true"><div className="record"/><img src="stay-in-bear.webp" alt="" width="760" height="760" fetchPriority="high"/></div>
+          <div className="cover-art" aria-hidden="true"><div className="record"/><img src="varsity-bear.webp" alt="" width="760" height="760" fetchPriority="high"/></div>
         </div>
       </section>
       <div className="source-line"><span>Study cohort</span><b>{num(all.n)} students</b><i/>One Portuguese institution<i/>2008/09–2018/19</div>
@@ -383,7 +383,7 @@ export default function App() {
               <li>Nationality and parent education/occupation remain numeric codes and are not analyzed here.</li>
             </ul>
           </Card>
-          <Card title="Behind The College Stay-In" takeaway="Our name is a nod to The College Dropout. We flipped the question around: what would help a student stay? The varsity bear carries that idea through the project.">
+          <Card title="Behind Everybody Walks" takeaway="Everybody Walks is our nod to Jesus Walks and Graduation Day on The College Dropout. For a student, walking means crossing the graduation stage. We built this dashboard around the check-ins that can happen along the way.">
             <ul className="plain">
               <li><b>Merachew Gebremariam:</b> topic, proposal, number verification, poster text.</li>
               <li><b>Cartez Dewberry:</b> project plan, dashboard design and build, poster production.</li>
@@ -397,7 +397,7 @@ export default function App() {
 
       <footer className="footer">
         <div className="footer-in">
-          <div className="brand"><Logo size={28} /><span className="brand-t"><b>The College Stay-In</b><small>Team 4 · MSA 8030 · Georgia State University · Fall 2026</small></span></div>
+          <div className="brand"><Logo size={28} /><span className="brand-t"><b>Everybody Walks</b><small>Team 4 · MSA 8030 · Georgia State University · Fall 2026</small></span></div>
           <p>Student project at Georgia State University. The records describe historical outcomes at a Portuguese institution.</p>
         </div>
       </footer>
