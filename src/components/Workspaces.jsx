@@ -100,6 +100,7 @@ export function Workspace({ role, list, groups, summary: s, onExplore }) {
   const both = groups.heatTP[0][0];
   const late = groups.tuition[0];
   const base = <Metric label="Selected cohort" value={num(s.n)} detail="students in this view"/>;
+  const graduationView = role === 'advising' || role === 'success';
   let metrics, chart, action, link;
   switch(role) {
     case 'leadership':
@@ -110,12 +111,12 @@ export function Workspace({ role, list, groups, summary: s, onExplore }) {
     case 'advising':
       metrics = <>{base}<Metric label="Passed under half" value={num(low.n)} detail="students with first-term results"/><Metric label="Dropout in that group" value={rate(low.dropouts,low.n)} detail={num(low.dropouts)+' recorded dropouts'}/></>;
       chart = <Comparison overall={s.dropRate} title="Dropout rate by first-term units passed" rows={groups.bands.map((r,i)=>({...r,label:BANDS[i].long}))} note="Pass rate is approved units divided by enrolled units. Students with zero enrolled units appear separately."/>;
-      action='Use the first-term results to size an offer of advising appointments. Advisors would still need to ask students which barriers they faced.';link='academic'; break;
+      action='Ask which courses are getting in the way of graduation. Use the check-in to plan next term’s course load with the student.';link='academic'; break;
     case 'success': {
       const cross = groups.tRows.flatMap(([,t],i)=>groups.pCols.map(([,p],j)=>({...groups.heatTP[i][j],key:i+'-'+j,label:t+' · '+p})));
       metrics = <>{base}<Metric label="Both signals present" value={num(both.n)} detail="behind on tuition and passed under half"/><Metric label="Dropout with both" value={rate(both.dropouts,both.n)} detail={num(both.dropouts)+' recorded dropouts'}/></>;
       chart=<Comparison overall={s.dropRate} title="Tuition status and first-term progress" rows={cross} note="The comparison includes students with enrolled first-term units. The timing of the tuition record is unknown."/>;
-      action='Estimate how many joint appointments financial aid and advising might offer so students can discuss both needs in one visit.';link='academic'; break; }
+      action='Bring financial aid and advising into one conversation. Agree with the student on the next payment and course milestones toward their degree.';link='academic'; break; }
     case 'enrollment': {
       const programs=groups.courses.filter(r=>r.n).sort((a,b)=>rank==='count' ? b.dropouts-a.dropouts || b.n-a.n : b.dropRate-a.dropRate || b.n-a.n);
       const largest=programs[0];
@@ -130,6 +131,10 @@ export function Workspace({ role, list, groups, summary: s, onExplore }) {
     <span className="section-label">{profile.label}</span><h2 id="work-title" tabIndex={-1}>{profile.question}</h2>
     {s.n ? <>{role === 'leadership' && <OutreachComparison tuition={late} additional={groups.heatTP[1][0]} summary={s}/>}
       {metrics && <div className="metric-strip">{metrics}</div>}<div className="decision-grid"><div className="decision-chart">{chart}</div>
-      <aside className="decision-note"><h3>{role === 'leadership' ? 'Before scheduling outreach' : 'What your team can do'}</h3><p>{action}</p><button onClick={()=>onExplore(link)}>{role === 'leadership' ? 'Compare outreach rules' : 'Explore the evidence'} <span aria-hidden="true">↗</span></button></aside></div></> : <p className="empty-report">No matching students. Reset the cohort filters to see this workspace.</p>}
+      <aside className={'decision-note' + (graduationView ? ' graduation-note' : '')}>
+        {graduationView && <img className="graduation-scene" src="graduation-day.webp" width="900" height="600" loading="lazy" alt="Illustration of three graduates celebrating together in blue caps and gowns."/>}
+        <div className="decision-copy"><h3>{graduationView ? 'Supporting students toward graduation' : role === 'leadership' ? 'Before scheduling outreach' : 'What your team can do'}</h3>
+          <p>{action}</p><button onClick={()=>onExplore(link)}>{role === 'leadership' ? 'Compare outreach rules' : 'Explore the evidence'} <span aria-hidden="true">↗</span></button>
+        </div></aside></div></> : <p className="empty-report">No matching students. Reset the cohort filters to see this workspace.</p>}
   </section>;
 }

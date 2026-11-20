@@ -1,3 +1,4 @@
+import Select from './FilterSelect';
 import { useEffect, useRef, useState } from 'react';
 import { DataTable } from './charts.jsx';
 import { useInView } from './charts.jsx';
@@ -87,18 +88,6 @@ export function Section({ id, kicker, title, intro, children }) {
 }
 
 // ---------- Filters ----------
-function Select({ label, allLabel, value, options, optionLabels = {}, onChange }) {
-  return (
-    <label className={`fl${value !== 'All' ? ' active' : ''}`}>
-      <span>{label}</span>
-      <select aria-label={label} value={value} onChange={(e) => onChange(e.target.value)}>
-        <option value="All">{allLabel}</option>
-        {options.map(option => <option key={option} value={option}>{optionLabels[option] ?? option}</option>)}
-      </select>
-    </label>
-  );
-}
-
 export function FilterBar({ filters, setFilters, defaults, options, n, total }) {
   const [open, setOpen] = useState(false);
   const active = Object.keys(filters).filter((k) => filters[k] !== 'All').length;

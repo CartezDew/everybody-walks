@@ -156,8 +156,6 @@ h1, h2, h3 { line-height: 1.15; margin: 0; }
 .fb-toggle { display: none; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--surface); border-radius: 10px; padding: 8px 12px; font-weight: 600; font-size: 14px; }
 .fb-fields { display: flex; gap: 10px; flex-wrap: wrap; flex: 1; }
 .fl { display: flex; flex-direction: column; gap: 3px; font-size: 11.5px; color: var(--ink-2); font-weight: 600; min-width: 0; }
-.fl select { appearance: none; -webkit-appearance: none; font: inherit; font-size: 14px; font-weight: 500; color: var(--ink); background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23898781' stroke-width='1.6' fill='none'/%3E%3C/svg%3E") no-repeat right 10px center; border: 1px solid var(--border); border-radius: 10px; padding: 7px 28px 7px 10px; max-width: 220px; transition: border-color 0.2s, box-shadow 0.2s; }
-.fl.active select { border-color: var(--brand); box-shadow: 0 0 0 3px color-mix(in oklab, var(--brand) 18%, transparent); }
 .fb-status { display: flex; align-items: center; gap: 10px; white-space: nowrap; }
 .fb-count { font-size: 13px; color: var(--ink-2); }
 .fb-count b { color: var(--ink); font-variant-numeric: tabular-nums; }
@@ -392,7 +390,6 @@ main { max-width: 1280px; margin: 0 auto; padding: 8px 24px 40px; }
   .fb-inner { flex-wrap: wrap; align-items: center; padding: 8px 16px; }
   .fb-fields { display: none; order: 3; flex-basis: 100%; display: none; }
   .filterbar.open .fb-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 6px 0 8px; }
-  .fl select { max-width: none; width: 100%; }
   .fb-status { margin-left: auto; }
 }
 @media (max-width: 600px) {

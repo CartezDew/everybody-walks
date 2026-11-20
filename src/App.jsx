@@ -7,6 +7,7 @@ import { Donut, RateBars, Columns, StackedOutcomes, Heatmap, CourseScatter, rate
 import { Logo, GraduationCap, Kpi, Card, Section, FilterBar } from './components/ui.jsx';
 import { RolePicker, Workspace } from './components/Workspaces.jsx';
 import FlagBuilder from './components/FlagBuilder.jsx';
+import ExplorerNav from './components/ExplorerNav';
 
 const OUTCOME_COLORS = ['var(--drop)', 'var(--enr)', 'var(--grad)'];
 const OUTCOME_NAMES = ['Dropout', 'Enrolled', 'Graduate'];
@@ -200,9 +201,10 @@ export default function App() {
         total={all.n}
       />
 
-      <main id="main">
+      <main id="main" className={page === 'explorer' ? 'explorer-layout' : undefined}>
         {page==='workspace' ? <Workspace role={role} list={list} groups={G} summary={S} onExplore={go}/> : <>
-        <nav className="explorer-nav" aria-label="Evidence sections">{NAV.map(([id,label])=><button key={id} onClick={()=>go(id)}>{label}</button>)}</nav>
+        <ExplorerNav items={NAV} go={go} hasData={S.n > 0}/>
+        <div className="explorer-content">
         {!S.n ? <div id="overview"><p className="empty-report" role="status">No students match these filters. Reset the filters to compare outcomes.</p><DatasetLinks/></div> : <>
         <Section id="overview" kicker="01 · The problem" title="Student outcomes in the selected cohort" intro="Outcomes are recorded at the end of each student's normal program length. 'Enrolled' means the student was still studying, which is neither a graduation nor a dropout.">
           {outcomeCards}
@@ -412,11 +414,11 @@ export default function App() {
               <li><b>Merachew Gebremariam:</b> topic, proposal, number verification, poster text.</li>
               <li><b>Cartez Dewberry:</b> project plan, dashboard design and build, poster production.</li>
               <li><b>Carson Johnston:</b> decoded dataset, presentation, review and submission.</li>
-              <li><b>AI disclosure:</b> The team used AI assistance for coding, visual design and the illustrated mascot. Chart values are calculated from the decoded dataset.</li>
+              <li><b>AI disclosure:</b> The team used AI assistance for coding, visual design, the mascot and the graduation illustration. Chart values are calculated from the decoded dataset.</li>
             </ul>
           </Card>
         </Section>
-        </>}
+        </div></>}
       </main>
 
       <footer className="footer">
