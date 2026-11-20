@@ -240,10 +240,13 @@
 
 .filter-trigger {
   width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 7px;
-  padding: 8px 10px; background: var(--surface); border: 1px solid var(--border);
-  border-radius: 7px; color: var(--ink); text-align: left; font-size: 14px;
+  padding: 7px 8px 7px 11px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--ink); text-align: left;
+  font: 600 15px/1.25 Georgia, serif;
+
 }
 .filter-trigger span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.filter-caret { display: grid; place-items: center; width: 21px; height: 21px; border-radius: 50%; background: var(--accent-bg); flex: none; }
 .filter-trigger i { width: 7px; height: 7px; border: solid var(--muted); border-width: 0 1.7px 1.7px 0; transform: translateY(-2px) rotate(45deg); flex: none; }
 .filter-trigger[aria-expanded=true] i { transform: translateY(2px) rotate(225deg); }
 .fl.active .filter-trigger, .filter-trigger:hover, .filter-trigger[aria-expanded=true] { border-color: var(--brand); }
@@ -256,6 +259,9 @@
 .filter-options [role=option] { display: flex; justify-content: space-between; gap: 8px; padding: 8px 10px; border-radius: 4px; font-size: 15px; line-height: 1.3; cursor: pointer; }
 .filter-options [role=option]:hover, .filter-options .option-cursor { background: var(--surface-2); }
 .filter-options [aria-selected=true] { color: var(--brand); font-weight: 650; background: var(--accent-bg); }
+.filter-options [data-scope=all] { font: 600 16px/1.3 Georgia, serif; margin-bottom: 5px; border-bottom: 1px solid var(--border); }
+.filter-options [role=option] b { display: grid; place-items: center; min-width: 20px; height: 20px; border-radius: 50%; color: var(--surface); background: var(--brand); font: 700 12px/1 var(--font); }
+.filter-options [role=option][aria-selected=true] { box-shadow: inset 3px 0 var(--brand); }
 .filter-options .option-cursor { outline: 1px solid var(--comparison); outline-offset: -1px; }
 .explorer-layout { display: grid; max-width: 1500px; grid-template-columns: auto minmax(0,1fr); align-items: start; gap: clamp(16px,2vw,32px); }
 .explorer-content { min-width: 0; }

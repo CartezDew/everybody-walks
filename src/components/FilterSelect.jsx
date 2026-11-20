@@ -98,11 +98,11 @@ export default function FilterSelect({ label, allLabel, value, options, optionLa
       aria-label={label} aria-describedby={id+'-value'} aria-expanded={open} aria-haspopup="listbox" aria-controls={open ? id+'-list' : undefined}
       aria-activedescendant={open ? id+'-'+cursor : undefined} onBlur={() => setOpen(false)}
       onKeyDown={keyboard} onClick={() => open ? setOpen(false) : show()}>
-      <span id={id+'-value'}>{caption(value)}</span><i aria-hidden="true"/>
+      <span id={id+'-value'}>{caption(value)}</span><b className="filter-caret" aria-hidden="true"><i/></b>
     </button>
     {open && createPortal(<div ref={menu} id={id+'-list'} role="listbox" aria-label={label} className="filter-options" style={position}>
       {choices.map((key,i) => <div role="option" id={id+'-'+i} key={key} aria-selected={key === value}
-        className={i === cursor ? 'option-cursor' : ''} onMouseDown={event => event.preventDefault()}
+        data-scope={i === 0 ? 'all' : undefined} className={i === cursor ? 'option-cursor' : ''} onMouseDown={event => event.preventDefault()}
         onClick={() => select(key)}><span>{caption(key)}</span>{key === value && <b aria-hidden="true">✓</b>}</div>)}
     </div>, document.body)}
   </div>;
