@@ -159,7 +159,7 @@ export default function App() {
             <p className="cover-lede">When advising time is limited, where do you start? Explore how tuition and first-term progress relate to staying in college.</p>
             <button className="cover-action" onClick={() => go('roles')}>Choose your role <span aria-hidden="true">↓</span></button>
           </div>
-          <div className="cover-art" aria-hidden="true"><div className="record"/><img src="varsity-bear.webp" alt="" width="760" height="760" fetchPriority="high"/></div>
+          <div className="cover-art" aria-hidden="true"><div className="record"/><img className="cover-mascot" src="varsity-bear.webp" alt="" width="760" height="760" fetchPriority="high"/><img className="campus-pack" src="campus-backpack.webp" alt="" width="240" height="240"/></div>
         </div>
       </section>
       <div className="source-line"><span>Study cohort</span><b>{num(all.n)} students</b><i/>One Portuguese institution<i/>2008/09–2018/19</div>

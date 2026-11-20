@@ -3,7 +3,7 @@ import { DataTable } from './charts.jsx';
 import { useInView } from './charts.jsx';
 
 export function Logo({ size = 40 }) {
-  return <img className="logo-mark" src="bear-mark.png" width={size} height={size} alt="" />;
+  return <img className="logo-mark" src="bear-head.png" width={size} height={size} alt="" />;
 }
 
 // ---------- Count-up number ----------
@@ -80,12 +80,13 @@ export function Section({ id, kicker, title, intro, children }) {
 }
 
 // ---------- Filters ----------
-function Select({ label, value, options, onChange }) {
+function Select({ label, allLabel, value, options, optionLabels = {}, onChange }) {
   return (
     <label className={`fl${value !== 'All' ? ' active' : ''}`}>
       <span>{label}</span>
       <select aria-label={label} value={value} onChange={(e) => onChange(e.target.value)}>
-        {options.map((o) => <option key={o} value={o}>{o === 'All' ? `All` : o}</option>)}
+        <option value="All">{allLabel}</option>
+        {options.map(option => <option key={option} value={option}>{optionLabels[option] ?? option}</option>)}
       </select>
     </label>
   );
@@ -100,19 +101,25 @@ export function FilterBar({ filters, setFilters, defaults, options, n, total }) 
       <div className="fb-inner">
         <button className="fb-toggle" onClick={() => setOpen(!open)} aria-expanded={open}>
           <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 3h12M4 8h8M6 13h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>
-          Filters{active ? ` · ${active}` : ''}
+          Cohort filters{active ? ` · ${active}` : ''}
         </button>
         <div className="fb-fields">
-          <Select label="Program" value={filters.course} options={['All', ...options.courses]} onChange={set('course')} />
-          <Select label="Gender" value={filters.gender} options={['All', 'Female', 'Male']} onChange={set('gender')} />
-          <Select label="Age at entry" value={filters.age} options={['All', ...options.ages]} onChange={set('age')} />
-          <Select label="Scholarship" value={filters.scholar} options={['All', 'Yes', 'No']} onChange={set('scholar')} />
-          <Select label="Tuition" value={filters.tuition} options={['All', 'Up to date', 'Not up to date']} onChange={set('tuition')} />
-          <Select label="Attendance" value={filters.attendance} options={['All', 'Daytime', 'Evening']} onChange={set('attendance')} />
+          <Select label="Academic program" allLabel="All programs" value={filters.course}
+            options={options.courses} onChange={set('course')} />
+          <Select label="Recorded gender" allLabel="All genders" value={filters.gender}
+            options={['Female', 'Male']} optionLabels={{ Female: 'Female students', Male: 'Male students' }} onChange={set('gender')} />
+          <Select label="Age at enrollment" allLabel="All entry ages" value={filters.age}
+            options={options.ages} optionLabels={{ 'Under 21': 'Under 21 years', '21–24': '21–24 years', '25–34': '25–34 years', '35+': '35 years or older' }} onChange={set('age')} />
+          <Select label="Scholarship status" allLabel="Any scholarship" value={filters.scholar}
+            options={['Yes', 'No']} optionLabels={{ Yes: 'With a scholarship', No: 'No scholarship' }} onChange={set('scholar')} />
+          <Select label="Tuition payment" allLabel="Any fee status" value={filters.tuition}
+            options={['Up to date', 'Not up to date']} optionLabels={{ 'Up to date': 'Tuition current', 'Not up to date': 'Tuition behind' }} onChange={set('tuition')} />
+          <Select label="Class schedule" allLabel="All schedules" value={filters.attendance}
+            options={['Daytime', 'Evening']} optionLabels={{ Daytime: 'Daytime classes', Evening: 'Evening classes' }} onChange={set('attendance')} />
         </div>
         <div className="fb-status">
           <span className="fb-count"><b>{n.toLocaleString()}</b> of {total.toLocaleString()} students</span>
-          <button className="btn-ghost" onClick={() => setFilters(defaults)} disabled={!active}>Reset</button>
+          <button className="btn-ghost" onClick={() => setFilters(defaults)} disabled={!active}>Reset filters</button>
         </div>
       </div>
       {n > 0 && n < 30 && (
