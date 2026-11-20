@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef, useState } from 'react';
 
 const icons = {
   overview: 'M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z',
+  demographics: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M4 21v-2a8 8 0 0 1 16 0v2 M3 10a3 3 0 0 1 3-3 M21 10a3 3 0 0 0-3-3',
   money: 'M3 6h17v13H3z M3 7V5l14-3v4 M15 10h6v5h-6z',
   academic: 'M2 5q5-2 10 1 5-3 10-1v14q-5-2-10 1-5-3-10-1z M12 6v14',
   alert: 'M3 6h7m4 0h7M3 12h12m4 0h2M3 18h2m4 0h12 M10 3v6m5 0v6m-9 0v6',
@@ -17,7 +18,7 @@ export default function ExplorerNav({ items, go, hasData }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [current, setCurrent] = useState('overview');
   const toggle = useRef(null);
-  const enabled = id => hasData || ['overview','insights','act','methods'].includes(id);
+  const enabled = id => hasData || ['overview','demographics','insights','act','methods'].includes(id);
 
   useLayoutEffect(() => {
     const filter = document.querySelector('.filterbar');

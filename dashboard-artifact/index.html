@@ -1,0 +1,720 @@
+<meta name="dash-one-writer">
+<style>
+  .soc {
+    --soc-green: #0039a6;
+    --soc-green-deep: #002a7a;
+    --soc-navy: #001b4d;
+    --soc-amber: #f2a93b;
+    --soc-drop: #e0672f;
+    --soc-enr: #4a86d0;
+    --soc-grad: #13946b;
+    --soc-soft: color-mix(in oklab, var(--soc-green) 9%, var(--color-panel));
+    display: flex; flex-direction: column; gap: var(--cds-gap-lg);
+    font-family: var(--font-anthropic-sans); color: var(--color-fg);
+  }
+  .soc h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0; text-wrap: balance; }
+  .soc h3 { font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); margin: 0; }
+  .soc p { margin: 0; }
+  .soc-muted { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+
+  /* Brand band */
+  .soc-band { position: relative; overflow: hidden; border-radius: calc(var(--cds-radius) * 1.6); padding: var(--cds-pad-xl) var(--cds-pad-xl); color: #fff;
+    background: linear-gradient(125deg, var(--soc-green-deep) 0%, var(--soc-green) 45%, var(--soc-navy) 100%); }
+  .soc-band::after { content: ""; position: absolute; right: -60px; top: -80px; width: 280px; height: 280px; border-radius: 50%; background: radial-gradient(circle, rgba(108,172,228,.55), transparent 70%); pointer-events: none; }
+  .soc-brand { display: flex; align-items: center; gap: 12px; }
+  .soc-bear { flex-shrink: 0; background: rgba(255,255,255,.92); border-radius: 14px; padding: 2px; }
+  @media (prefers-reduced-motion: no-preference) { .soc-bear { animation: soc-bob 3.2s ease-in-out infinite; transform-origin: 50% 90%; } @keyframes soc-bob { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } } }
+  .soc-brand b { font-size: 20px; letter-spacing: -0.01em; }
+  .soc-brand small { display: block; opacity: .82; font-size: 12.5px; }
+  .soc-band h1 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: clamp(26px, 4vw, 40px); line-height: 1.12; margin: var(--cds-gap-lg) 0 var(--cds-gap-sm); max-width: 760px; text-wrap: balance; }
+  .soc-band .soc-lede { max-width: 700px; font-size: 18px; line-height: 1.55; opacity: .95; }
+  .soc-band .soc-lede b { color: #ffffff; background: rgba(255,255,255,.16); padding: 0 4px; border-radius: 4px; }
+  .soc-chip { display: inline-block; padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.25); font-size: 12px; font-weight: 600; }
+
+  /* Filters */
+  .soc-filters { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm); align-items: flex-end; }
+  .soc-filters label { display: flex; flex-direction: column; gap: 3px; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); min-width: 0; flex: 1 1 140px; max-width: 240px; }
+  .soc-filters select { width: 100%; }
+  .soc-count { margin-left: auto; display: flex; gap: var(--cds-gap-sm); align-items: center; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .soc-count b { color: var(--color-fg); font-variant-numeric: tabular-nums; }
+  .soc-btn { font: inherit; font-size: var(--cds-font-size-caption); font-weight: 600; border: 1px solid var(--color-border-line); background: var(--color-panel); color: var(--color-fg); border-radius: 999px; padding: 6px 14px; cursor: pointer; }
+  .soc-btn:hover { border-color: var(--soc-green); }
+  .soc-btn[aria-pressed="true"] { background: var(--soc-green); border-color: var(--soc-green); color: #fff; }
+  .soc-warn { font-size: var(--cds-font-size-caption); color: var(--color-warn); font-weight: 600; }
+
+  /* KPI tiles */
+  .soc-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--cds-gap-md); }
+  .soc-kpi { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md) var(--cds-pad-lg); position: relative; overflow: hidden; }
+  .soc-kpi::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 4px; background: var(--k, var(--soc-green)); }
+  .soc-kpi .v { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: clamp(26px, 3.2vw, 34px); line-height: 1.15; display: block; margin: 2px 0; }
+  .soc-kpi .l { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-weight: 600; }
+
+  /* Cards */
+  .soc-sec { display: flex; flex-direction: column; gap: var(--cds-gap-md); }
+  .soc-sec-h { display: flex; flex-direction: column; gap: 4px; max-width: 760px; }
+  .soc-eyebrow { font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: color-mix(in oklab, var(--soc-green) 70%, var(--color-fg)); }
+  .soc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr)); gap: var(--cds-gap-md); }
+  .soc-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: flex; flex-direction: column; gap: var(--cds-gap-sm); min-width: 0; }
+  .soc-card.wide { grid-column: 1 / -1; }
+  .soc-take { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.5; }
+  .soc-take b { color: var(--color-fg); }
+  .soc-chart { position: relative; min-height: 120px; }
+
+  /* Rate bars */
+  .soc-rb { display: grid; grid-template-columns: minmax(96px, 34%) 1fr 64px; gap: 10px; align-items: center; padding: 6px 4px; border-radius: 8px; cursor: default; }
+  .soc-rb:hover { background: var(--soc-soft); }
+  .soc-rb.small { opacity: .5; }
+  .soc-rb.click { cursor: pointer; }
+  .soc-rb.sel { background: var(--soc-soft); box-shadow: inset 0 0 0 1.5px var(--soc-green); }
+  .soc-rb .lab { font-size: 13px; font-weight: 600; line-height: 1.25; min-width: 0; overflow-wrap: anywhere; }
+  .soc-rb .lab small { display: block; font-weight: 400; color: var(--color-fg-muted); font-size: 11.5px; font-variant-numeric: tabular-nums; }
+  .soc-rb .trk { position: relative; height: 20px; }
+  .soc-rb .bar { position: absolute; left: 0; top: 2px; bottom: 2px; border-radius: 0 4px 4px 0; }
+  .soc-rb .ci { position: absolute; top: 50%; border-top: 1.5px solid var(--color-fg); }
+  .soc-rb .ci::before, .soc-rb .ci::after { content: ""; position: absolute; top: -4px; height: 7px; border-left: 1.5px solid var(--color-fg); }
+  .soc-rb .ci::before { left: 0; } .soc-rb .ci::after { right: 0; }
+  .soc-rb .ref { position: absolute; top: -3px; bottom: -3px; border-left: 1.5px dashed var(--cds-chart-reference); }
+  .soc-rb .val { text-align: right; font-weight: 700; font-size: 14px; font-variant-numeric: tabular-nums; line-height: 1.15; }
+  .soc-rb .val small { display: block; font-weight: 400; font-size: 11px; color: var(--color-fg-muted); }
+  .soc-foot { font-size: 11.5px; color: var(--color-fg-muted); display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .soc-foot i { width: 14px; border-top: 1.5px dashed var(--cds-chart-reference); display: inline-block; }
+
+  /* Segmented outcome bar */
+  .soc-seg { display: flex; gap: 2px; height: 30px; border-radius: 6px; overflow: hidden; }
+  .soc-seg > div { display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12.5px; font-weight: 700; min-width: 0; overflow: hidden; }
+  .soc-legend { display: flex; flex-wrap: wrap; gap: var(--cds-gap-md); font-size: 13px; }
+  .soc-legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .soc-legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+  .soc-legend b { font-variant-numeric: tabular-nums; }
+
+  /* Heatmap */
+  .soc-heat { display: grid; grid-template-columns: minmax(84px, 1.1fr) 1fr 1fr; gap: 4px; }
+  .soc-heat .h { font-size: 12px; font-weight: 700; text-align: center; align-self: end; padding-bottom: 2px; }
+  .soc-heat .rh { font-size: 12.5px; font-weight: 700; display: flex; align-items: center; }
+  .soc-heat .c { border-radius: 8px; min-height: 70px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: default; }
+  .soc-heat .c b { font-size: 22px; font-family: var(--font-anthropic-serif); font-weight: 400; }
+  .soc-heat .c small { font-size: 11px; opacity: .85; }
+  .soc-scale { display: flex; align-items: center; gap: 2px; font-size: 11px; color: var(--color-fg-muted); }
+  .soc-scale i { width: 22px; height: 7px; display: inline-block; }
+
+  /* Columns */
+  .soc-cols { display: flex; gap: clamp(6px, 2vw, 18px); height: 230px; align-items: stretch; border-bottom: 1px solid var(--cds-chart-axis); position: relative; }
+  .soc-col { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; min-width: 0; }
+  .soc-col .bar { width: min(56px, 78%); border-radius: 4px 4px 0 0; position: relative; }
+  .soc-col .bar span { position: absolute; top: -19px; left: 50%; transform: translateX(-50%); font-size: 12px; font-weight: 700; white-space: nowrap; color: var(--color-fg); }
+  .soc-collabs { display: flex; gap: clamp(6px, 2vw, 18px); }
+  .soc-collabs div { flex: 1; text-align: center; font-size: 11.5px; font-weight: 600; line-height: 1.2; min-width: 0; }
+  .soc-collabs small { display: block; font-weight: 400; color: var(--color-fg-muted); }
+  .soc-colref { position: absolute; left: 0; right: 0; border-top: 1.5px dashed var(--cds-chart-reference); pointer-events: none; }
+
+  /* Alert builder */
+  .soc-alert { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: var(--cds-gap-lg); }
+  .soc-toggles { display: flex; flex-direction: column; gap: 8px; }
+  .soc-tog { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border: 1px solid var(--color-border-line); border-radius: 10px; cursor: pointer; font-size: 13.5px; font-weight: 600; }
+  .soc-tog:has(input:checked) { border-color: var(--soc-green); background: var(--soc-soft); }
+  .soc-tog input { accent-color: var(--soc-green); width: 16px; height: 16px; }
+  .soc-tog small { display: block; font-weight: 400; color: var(--color-fg-muted); font-size: 11.5px; }
+  .soc-meters { display: flex; flex-direction: column; gap: var(--cds-gap-md); }
+  .soc-meter .top { display: flex; justify-content: space-between; align-items: baseline; font-size: 13.5px; font-weight: 600; }
+  .soc-meter .top b { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: 26px; font-variant-numeric: tabular-nums; }
+  .soc-meter .trk { height: 10px; border-radius: 999px; background: color-mix(in oklab, var(--color-fg) 9%, transparent); overflow: hidden; margin: 4px 0; }
+  .soc-meter .fill { height: 100%; border-radius: 999px; }
+  .soc-meter .sub { display: flex; justify-content: space-between; gap: 8px; font-size: 11.5px; color: var(--color-fg-muted); }
+  .soc-read { font-size: 13.5px; line-height: 1.5; padding: 10px 12px; border-left: 3px solid var(--soc-amber); background: color-mix(in oklab, var(--soc-amber) 10%, var(--color-panel)); border-radius: 0 8px 8px 0; }
+
+  /* Recommendations */
+  .soc-recs { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: var(--cds-gap-md); }
+  .soc-rec { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: flex; flex-direction: column; gap: 8px; }
+  .soc-rec .n { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; color: #fff; font-weight: 700; background: linear-gradient(135deg, var(--soc-green), var(--soc-navy)); }
+  .soc-rec p { font-size: 13.5px; color: var(--color-fg-muted); line-height: 1.5; }
+  .soc-rec p b { color: var(--color-fg); }
+  .soc-rec .who { font-size: 11.5px; font-weight: 700; color: var(--soc-green); margin-top: auto; }
+
+  .soc details { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md) var(--cds-pad-lg); }
+  .soc details summary { cursor: pointer; font-weight: 600; }
+  .soc details ul { margin: var(--cds-gap-sm) 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 13.5px; color: var(--color-fg-muted); line-height: 1.5; }
+
+  /* Tooltip */
+  .soc-tip { position: absolute; z-index: 5; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); box-shadow: var(--cds-shadow-popover); border-radius: 8px; padding: 8px 10px; font-size: 12px; min-width: 170px; max-width: 240px; color: var(--color-fg); }
+  .soc-tip .t { font-weight: 700; margin-bottom: 3px; }
+  .soc-tip .r { display: flex; justify-content: space-between; gap: 12px; font-variant-numeric: tabular-nums; }
+  .soc-tip .r span { color: var(--cds-text-secondary); }
+  .soc-tip .w { color: var(--color-warn); font-weight: 600; margin-top: 4px; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .soc-rb .bar, .soc-col .bar, .soc-meter .fill, .soc-seg > div { transition: width var(--cds-dur-slow) var(--cds-ease-out), height var(--cds-dur-slow) var(--cds-ease-out); }
+    .soc-band h1, .soc-band .soc-lede { animation: soc-rise .7s var(--cds-ease-out) both; }
+    .soc-band .soc-lede { animation-delay: .12s; }
+    @keyframes soc-rise { from { opacity: .001; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  }
+  @media (max-width: 520px) {
+    .soc-band { padding: var(--cds-pad-lg); }
+    .soc-rb { grid-template-columns: minmax(80px, 38%) 1fr 54px; gap: 6px; }
+    .soc-count { margin-left: 0; width: 100%; justify-content: space-between; }
+  }
+</style>
+
+<div class="soc">
+  <header class="soc-band" id="top">
+    <div class="soc-brand">
+      <svg class="soc-bear" width="44" height="44" viewBox="0 0 48 48" aria-hidden="true"><circle cx="13.5" cy="20" r="5.5" fill="#8a5a3b"/><circle cx="13.5" cy="20" r="2.8" fill="#e3c39d"/><circle cx="34.5" cy="20" r="5.5" fill="#8a5a3b"/><circle cx="34.5" cy="20" r="2.8" fill="#e3c39d"/><circle cx="24" cy="28" r="13" fill="#8a5a3b"/><ellipse cx="24" cy="33" rx="6.2" ry="4.8" fill="#e3c39d"/><ellipse cx="24" cy="30.8" rx="2.5" ry="1.8" fill="#2b1a10"/><path d="M24 32.4v1.8M21.6 34.6c1.3 1.1 3.5 1.1 4.8 0" fill="none" stroke="#2b1a10" stroke-width="1.2" stroke-linecap="round"/><circle cx="19" cy="25.5" r="1.7" fill="#2b1a10"/><circle cx="29" cy="25.5" r="1.7" fill="#2b1a10"/><path d="M16.5 15.5v3.6c0 1.6 3.4 2.7 7.5 2.7s7.5-1.1 7.5-2.7v-3.6z" fill="#001b4d"/><path d="M9 13.5 24 7l15 6.5L24 20z" fill="#001b4d" stroke="#ffffff" stroke-opacity=".35" stroke-width=".8"/><path d="M39 13.5v8" stroke="#f2a93b" stroke-width="1.6" stroke-linecap="round"/><circle cx="39" cy="22.5" r="1.8" fill="#f2a93b"/></svg>
+      <span><b>Everyone Walks</b><small>Skip the late registration. Stay on track for Graduation.</small></span>
+    </div>
+    <h1>Catch the signs. Keep the student.</h1>
+    <p class="soc-lede">Behind on tuition: <b data-draw="l-tno" data-source="groups" data-field="dropout_rate" data-where="dimension=tuition&amp;group=Not up to date">—</b> dropped out. Paid on time: <b data-draw="l-tyes" data-source="groups" data-field="dropout_rate" data-where="dimension=tuition&amp;group=Up to date">—</b>.</p>
+    <p style="margin-top: 14px"><span class="soc-chip">MSA 8030 · Team 4</span></p>
+  </header>
+
+  <div class="soc-filters" id="filters" role="group" aria-label="Filter students">
+    <label>Program<select class="dash-select" id="f-program" data-draw="f-program" aria-label="Program"></select></label>
+    <label>Tuition
+      <select class="dash-select" id="f-tuition" aria-label="Tuition status"><option value="">All</option><option>Up to date</option><option>Not up to date</option></select></label>
+    <label>Scholarship
+      <select class="dash-select" id="f-scholarship" aria-label="Scholarship"><option value="">All</option><option>Yes</option><option>No</option></select></label>
+    <label>Attendance
+      <select class="dash-select" id="f-attendance" aria-label="Attendance"><option value="">All</option><option>Daytime</option><option>Evening</option></select></label>
+    <label>Gender
+      <select class="dash-select" id="f-gender" aria-label="Gender"><option value="">All</option><option>Female</option><option>Male</option></select></label>
+    <label>Age at entry
+      <select class="dash-select" id="f-age_group" aria-label="Age at entry"><option value="">All</option><option>Under 21</option><option>21-24</option><option>25-34</option><option>35+</option></select></label>
+    <div class="soc-count"><span><b data-draw="n-view" data-source="summary" data-field="students" data-row="0">—</b> students in view</span><button class="soc-btn" id="reset" type="button">Reset filters</button></div>
+  </div>
+  <p class="soc-warn" id="small-warn" hidden>Fewer than 30 students match. Rates for this selection are unstable.</p>
+
+  <section class="soc-kpis" id="kpis" aria-label="Headline figures">
+    <div class="soc-kpi" style="--k: var(--soc-navy)"><span class="l">Students</span><span class="v" data-draw="k-n" data-source="summary" data-field="students" data-row="0">—</span><span class="soc-muted">in the current view</span></div>
+    <div class="soc-kpi" style="--k: var(--soc-drop)"><span class="l">Dropout rate</span><span class="v" data-draw="k-drop" data-source="summary" data-field="dropout_rate" data-row="0">—</span><span class="soc-muted">95% range <span data-draw="k-ci-lo" data-source="summary" data-field="ci_low" data-row="0">—</span> to <span data-draw="k-ci-hi" data-source="summary" data-field="ci_high" data-row="0">—</span></span></div>
+    <div class="soc-kpi" style="--k: var(--soc-grad)"><span class="l">Graduation rate</span><span class="v" data-draw="k-grad" data-source="summary" data-field="grad_rate" data-row="0">—</span><span class="soc-muted">finished on time</span></div>
+    <div class="soc-kpi" style="--k: var(--soc-enr)"><span class="l">Still enrolled</span><span class="v" data-draw="k-enr" data-source="summary" data-field="enrolled_rate" data-row="0">—</span><span class="soc-muted">not yet finished</span></div>
+    <div class="soc-kpi" style="--k: var(--soc-amber)"><span class="l">Students lost</span><span class="v" data-draw="k-lost" data-source="summary" data-field="dropouts" data-row="0">—</span><span class="soc-muted">dropped out</span></div>
+  </section>
+
+  <div class="soc-card" id="outcomes">
+    <h3>Where students in this view ended up</h3>
+    <div class="soc-chart" style="min-height: 64px" data-draw="outcome-bar" data-source="summary"></div>
+    <p class="soc-take">"Still enrolled" means the student was still studying when the record closed. It is neither a graduation nor a dropout.</p>
+  </div>
+
+  <section class="soc-sec" id="money">
+    <div class="soc-sec-h"><span class="soc-eyebrow">Financial strain</span><h2>Unpaid tuition is the strongest single warning sign</h2>
+      <p class="soc-muted">Each bar is the share of a group that dropped out. The dashed line is the rate for everyone in view, and whiskers show the 95% range.</p></div>
+    <div class="soc-grid">
+      <div class="soc-card wide" id="finance-bars">
+        <h3>Dropout rate by tuition, debt and scholarship</h3>
+        <div class="soc-chart" data-draw="bars-finance" data-source="groups summary"></div>
+        <p class="soc-take">Most students who dropped out were current on tuition (see "of dropouts"), so a tuition alert alone misses most of them.</p>
+      </div>
+      <div class="soc-card" id="heat-ts">
+        <h3>Tuition and scholarship together</h3>
+        <div class="soc-chart" data-draw="heat-ts" data-source="groups"></div>
+      </div>
+      <div class="soc-card" id="heat-tp">
+        <h3>Tuition and first-semester results together</h3>
+        <div class="soc-chart" data-draw="heat-tp" data-source="groups"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="soc-sec" id="academic">
+    <div class="soc-sec-h"><span class="soc-eyebrow">First semester</span><h2>Students who pass under half their first-semester courses rarely stay</h2>
+      <p class="soc-muted">Share of enrolled first-semester units each student passed. Known at the end of the first term, in time for a check-in before the second.</p></div>
+    <div class="soc-grid">
+      <div class="soc-card" id="sem1">
+        <h3>Dropout rate by first-semester courses passed</h3>
+        <div class="soc-chart" style="min-height: 280px" data-draw="cols-sem1" data-source="groups summary"></div>
+      </div>
+      <div class="soc-card" id="recovery">
+        <h3>A strong second semester changes the picture</h3>
+        <div class="soc-chart" data-draw="heat-rec" data-source="groups"></div>
+        <p class="soc-take">Few students who struggle in the first semester recover in the second, but those who do drop out far less often.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="soc-sec" id="alert">
+    <div class="soc-sec-h"><span class="soc-eyebrow">Early-alert builder</span><h2>Choose which signs trigger outreach</h2>
+      <p class="soc-muted">A student is flagged if any checked sign applies. The meters show how many students your team would contact and what share of eventual dropouts that list catches.</p></div>
+    <div class="soc-card wide">
+      <div class="soc-alert">
+        <div class="soc-toggles" role="group" aria-label="Warning signs">
+          <label class="soc-tog"><input type="checkbox" id="flag_tuition"><span>Tuition not up to date<small>Financial</small></span></label>
+          <label class="soc-tog"><input type="checkbox" id="flag_sem1"><span>Passed under half of 1st-semester courses<small>Academic, after term 1</small></span></label>
+          <label class="soc-tog"><input type="checkbox" id="flag_debtor"><span>Has outstanding debt<small>Financial</small></span></label>
+          <label class="soc-tog"><input type="checkbox" id="flag_noscholar"><span>No scholarship<small>Financial</small></span></label>
+          <label class="soc-tog"><input type="checkbox" id="flag_age25"><span>Age 25 or older at entry<small>Life stage</small></span></label>
+        </div>
+        <div class="soc-meters" data-draw="alert" data-source="alert"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="soc-sec" id="who">
+    <div class="soc-sec-h"><span class="soc-eyebrow">Drill down</span><h2>Which programs and groups need support most</h2>
+      <p class="soc-muted">Select a program to filter the whole dashboard. Select it again to clear.</p></div>
+    <div class="soc-grid">
+      <div class="soc-card wide" id="programs">
+        <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; align-items:center">
+          <h3>Programs ranked</h3>
+          <div role="group" aria-label="Rank programs by" style="display:flex; gap:6px">
+            <button class="soc-btn" type="button" id="sort-rate" aria-pressed="true">By dropout rate</button>
+            <button class="soc-btn" type="button" id="sort-count" aria-pressed="false">By students lost</button>
+          </div>
+        </div>
+        <div class="soc-chart" data-draw="programs" data-source="programs"></div>
+      </div>
+      <div class="soc-card" id="age">
+        <h3>By age at entry</h3>
+        <div class="soc-chart" data-draw="bars-age" data-source="groups summary"></div>
+        <p class="soc-take">Older students often work or have families. Evening and online advising hours reach them better.</p>
+      </div>
+      <div class="soc-card" id="ga">
+        <h3>By gender and attendance</h3>
+        <div class="soc-chart" data-draw="bars-ga" data-source="groups summary"></div>
+        <p class="soc-take">These describe groups that need support, not individuals likely to fail. The data does not record why students leave.</p>
+      </div>
+      <div class="soc-card wide" id="route">
+        <h3>By admission route</h3>
+        <div class="soc-chart" data-draw="bars-route" data-source="groups summary"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="soc-sec" id="act">
+    <div class="soc-sec-h"><span class="soc-eyebrow">What to do</span><h2>Four ways to keep students on course</h2></div>
+    <div class="soc-recs">
+      <div class="soc-rec"><span class="n">1</span><h3>Treat a missed payment as a check-in</h3><p>Reach out within weeks of a missed tuition payment. <b data-draw="r-tno" data-source="groups" data-field="dropout_rate" data-where="dimension=tuition&amp;group=Not up to date">—</b> of students behind on tuition dropped out.</p><span class="who">Financial aid and advising</span></div>
+      <div class="soc-rec"><span class="n">2</span><h3>Offer payment plans early</h3><p>Students with outstanding debt dropped out at <b data-draw="r-debt" data-source="groups" data-field="dropout_rate" data-where="dimension=debtor&amp;group=Yes">—</b>, compared with <b data-draw="r-nodebt" data-source="groups" data-field="dropout_rate" data-where="dimension=debtor&amp;group=No">—</b> for those without.</p><span class="who">Bursar and financial aid</span></div>
+      <div class="soc-rec"><span class="n">3</span><h3>Widen scholarship reach</h3><p>Scholarship holders dropped out at <b data-draw="r-sch" data-source="groups" data-field="dropout_rate" data-where="dimension=scholarship&amp;group=Yes">—</b>, compared with <b data-draw="r-nosch" data-source="groups" data-field="dropout_rate" data-where="dimension=scholarship&amp;group=No">—</b>. Pilot broader eligibility before assuming scholarships cause the gap.</p><span class="who">Enrollment management</span></div>
+      <div class="soc-rec"><span class="n">4</span><h3>Check in after the first semester</h3><p>Students who passed under half their first-semester courses dropped out at <b data-draw="r-sem" data-source="groups" data-field="dropout_rate" data-where="dimension=sem1_half&amp;group=Under half">—</b>. Meet with them before the second term starts.</p><span class="who">Advising and student success</span></div>
+    </div>
+  </section>
+
+  <details id="methods">
+    <summary>Definitions, data and limitations</summary>
+    <ul>
+      <li><b>Dropout rate</b>: students who dropped out divided by all students in the group. "Still enrolled" stays in the denominator.</li>
+      <li><b>First-semester pass share</b>: approved divided by enrolled first-semester units. Students who enrolled in no units are shown separately as "No units".</li>
+      <li><b>95% range</b>: Wilson score interval. Groups under 30 students are faded.</li>
+      <li><b>Alert builder</b>: workload is flagged students divided by all students in view, coverage is flagged dropouts divided by all dropouts in view, and hit rate is the dropout rate among flagged students.</li>
+      <li><b>Source</b>: UCI Machine Learning Repository, Predict Students' Dropout and Academic Success (DOI 10.24432/C5MC89); Realinho et al. (2022), Data 7(11):146. 4,424 students at one Portuguese institution, 2008/09 to 2018/19. The team decoded the numeric codes into labels, and the data had no missing cells or duplicate rows.</li>
+      <li><b>Limitations</b>: one institution, so results may not apply elsewhere. These are associations, not causes. The data does not say when tuition status was recorded, so some students may have stopped paying because they were already leaving.</li>
+    </ul>
+  </details>
+</div>
+
+<script>
+  // ---------- Calculations (readers can open each one in Sources) ----------
+  dash.calc('summary', {
+    title: 'Outcome totals for the current view',
+    description: 'Students, outcomes and dropout rate with a 95% Wilson interval, after the page filters.',
+    inputs: ['students'],
+    fn: (students) => {
+      const p = dash.params();
+      const rows = students.filter((r) => (!p.program || r.program === p.program) && (!p.tuition || r.tuition === p.tuition) && (!p.scholarship || r.scholarship === p.scholarship) && (!p.attendance || r.attendance === p.attendance) && (!p.gender || r.gender === p.gender) && (!p.age_group || r.age_group === p.age_group));
+      const n = rows.length;
+      const d = rows.filter((r) => r.outcome === 'Dropout').length;
+      const g = rows.filter((r) => r.outcome === 'Graduate').length;
+      const e = n - d - g;
+      const pct = (v) => Math.round(v * 1000) / 10;
+      const z = 1.96, ph = n ? d / n : 0, den = 1 + (z * z) / (n || 1);
+      const mid = (ph + (z * z) / (2 * (n || 1))) / den;
+      const half = n ? (z * Math.sqrt((ph * (1 - ph)) / n + (z * z) / (4 * n * n))) / den : 0;
+      return [{ students: n, dropouts: d, graduates: g, enrolled: e, dropout_rate: n ? pct(ph) : 0, grad_rate: n ? pct(g / n) : 0, enrolled_rate: n ? pct(e / n) : 0, ci_low: n ? pct(Math.max(0, mid - half)) : 0, ci_high: n ? pct(Math.min(1, mid + half)) : 0 }];
+    },
+  });
+
+  dash.calc('groups', {
+    title: 'Dropout rate by student group',
+    description: 'For each grouping (tuition, debt, scholarship, first-semester results, age, gender, attendance, admission route and combinations): students, dropouts, dropout rate with 95% Wilson interval, and share of all dropouts in view.',
+    inputs: ['students'],
+    fn: (students) => {
+      const p = dash.params();
+      const rows = students.filter((r) => (!p.program || r.program === p.program) && (!p.tuition || r.tuition === p.tuition) && (!p.scholarship || r.scholarship === p.scholarship) && (!p.attendance || r.attendance === p.attendance) && (!p.gender || r.gender === p.gender) && (!p.age_group || r.age_group === p.age_group));
+      const low = (b) => b === 'None passed' || b === 'Under half';
+      const half = (b) => (b === 'No units' ? null : low(b) ? 'Under half' : 'Half or more');
+      const dims = {
+        tuition: (r) => r.tuition,
+        debtor: (r) => r.debtor,
+        scholarship: (r) => r.scholarship,
+        sem1_pass: (r) => r.sem1_pass,
+        sem1_half: (r) => half(r.sem1_pass),
+        age_group: (r) => r.age_group,
+        gender: (r) => r.gender,
+        attendance: (r) => r.attendance,
+        admission_route: (r) => r.admission_route,
+        tuition_x_scholarship: (r) => r.tuition + ' / ' + (r.scholarship === 'Yes' ? 'Scholarship' : 'No scholarship'),
+        tuition_x_sem1: (r) => (half(r.sem1_pass) ? r.tuition + ' / ' + half(r.sem1_pass) : null),
+        sem1_x_sem2: (r) => (half(r.sem1_pass) ? half(r.sem1_pass) + ' / ' + (r.sem2_pass === 'No units' || low(r.sem2_pass) ? 'Under half' : 'Half or more') : null),
+      };
+      const totalDrop = rows.filter((r) => r.outcome === 'Dropout').length;
+      const pct = (v) => Math.round(v * 1000) / 10;
+      const out = [];
+      for (const [dimension, key] of Object.entries(dims)) {
+        const m = new Map();
+        for (const r of rows) {
+          const k = key(r);
+          if (k == null) continue;
+          const c = m.get(k) || { n: 0, d: 0, g: 0 };
+          c.n++;
+          if (r.outcome === 'Dropout') c.d++;
+          if (r.outcome === 'Graduate') c.g++;
+          m.set(k, c);
+        }
+        for (const [group, c] of m) {
+          const z = 1.96, ph = c.d / c.n, den = 1 + (z * z) / c.n;
+          const mid = (ph + (z * z) / (2 * c.n)) / den;
+          const hw = (z * Math.sqrt((ph * (1 - ph)) / c.n + (z * z) / (4 * c.n * c.n))) / den;
+          out.push({ dimension, group, students: c.n, dropouts: c.d, graduates: c.g, dropout_rate: pct(ph), ci_low: pct(Math.max(0, mid - hw)), ci_high: pct(Math.min(1, mid + hw)), grad_rate: pct(c.g / c.n), share_of_dropouts: totalDrop ? pct(c.d / totalDrop) : 0 });
+        }
+      }
+      return out;
+    },
+  });
+
+  dash.calc('programs', {
+    title: 'Dropout by program',
+    description: 'Students, dropouts and dropout rate per program, after every page filter except Program.',
+    inputs: ['students'],
+    fn: (students) => {
+      const p = dash.params();
+      const rows = students.filter((r) => (!p.tuition || r.tuition === p.tuition) && (!p.scholarship || r.scholarship === p.scholarship) && (!p.attendance || r.attendance === p.attendance) && (!p.gender || r.gender === p.gender) && (!p.age_group || r.age_group === p.age_group));
+      const m = new Map();
+      for (const r of rows) {
+        const c = m.get(r.program) || { n: 0, d: 0 };
+        c.n++;
+        if (r.outcome === 'Dropout') c.d++;
+        m.set(r.program, c);
+      }
+      return [...m].map(([program, c]) => ({ program, students: c.n, dropouts: c.d, dropout_rate: Math.round((c.d / c.n) * 1000) / 10 }));
+    },
+  });
+
+  dash.calc('alert', {
+    title: 'Early-alert list size and coverage',
+    description: 'Flags a student if any chosen sign applies, then counts flagged students, the share of all students (workload), the share of dropouts caught (coverage) and the dropout rate among flagged students (hit rate).',
+    inputs: ['students'],
+    fn: (students) => {
+      const p = dash.params();
+      const rows = students.filter((r) => (!p.program || r.program === p.program) && (!p.tuition || r.tuition === p.tuition) && (!p.scholarship || r.scholarship === p.scholarship) && (!p.attendance || r.attendance === p.attendance) && (!p.gender || r.gender === p.gender) && (!p.age_group || r.age_group === p.age_group));
+      const flag = (r) =>
+        (p.flag_tuition && r.tuition === 'Not up to date') ||
+        (p.flag_sem1 && (r.sem1_pass === 'None passed' || r.sem1_pass === 'Under half')) ||
+        (p.flag_debtor && r.debtor === 'Yes') ||
+        (p.flag_noscholar && r.scholarship === 'No') ||
+        (p.flag_age25 && (r.age_group === '25-34' || r.age_group === '35+'));
+      const flagged = rows.filter(flag);
+      const rest = rows.filter((r) => !flag(r));
+      const drop = (a) => a.filter((r) => r.outcome === 'Dropout').length;
+      const pct = (v) => Math.round(v * 1000) / 10;
+      const all = drop(rows), fd = drop(flagged), rd = drop(rest);
+      return [{ flagged: flagged.length, flagged_dropouts: fd, all_dropouts: all, workload: rows.length ? pct(flagged.length / rows.length) : 0, coverage: all ? pct(fd / all) : 0, hit_rate: flagged.length ? pct(fd / flagged.length) : 0, unflagged_rate: rest.length ? pct(rd / rest.length) : 0 }];
+    },
+  });
+
+  // ---------- Shared helpers ----------
+  window.soc = (() => {
+    const C = { drop: 'var(--soc-drop)', enr: 'var(--soc-enr)', grad: 'var(--soc-grad)', green: 'var(--soc-green)', navy: 'var(--soc-navy)', amber: 'var(--soc-amber)' };
+    const RAMP = ['#fde8dc', '#f9c6a6', '#f39c6f', '#e0672f', '#b84b1c', '#7c2f0e'];
+    const ramp = (v) => RAMP[Math.min(RAMP.length - 1, Math.floor((v / 100) * RAMP.length))];
+    const fmt = (v) => (v == null || Number.isNaN(v) ? '—' : `${(+v).toFixed(1)}%`);
+    const int = (v) => (v == null ? '—' : d3.format(',')(v));
+    const enc = (s) => String(s).replace(/%/g, '%25').replace(/&/g, '%26').replace(/=/g, '%3D');
+    const ok = (id) => dash.data(id).status === 'ok';
+    const row = (dim, group) => (ok('groups') ? dash.data('groups').data.find((r) => r.dimension === dim && r.group === group) : null);
+    const mk = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+    const markG = (e, dim, group, field) => { e.setAttribute('data-source', 'groups'); e.setAttribute('data-field', field); e.setAttribute('data-where', `dimension=${enc(dim)}&group=${enc(group)}`); return e; };
+
+    function tip(el) {
+      const t = mk('div', 'soc-tip'); t.hidden = true; el.appendChild(t);
+      return {
+        show(ev, title, lines, warn) {
+          t.replaceChildren(mk('div', 't', title), ...lines.map(([k, v]) => { const r = mk('div', 'r'); r.append(mk('span', null, k), mk('b', null, v)); return r; }));
+          if (warn) t.append(mk('div', 'w', 'Fewer than 30 students: unstable'));
+          t.hidden = false;
+          const b = el.getBoundingClientRect();
+          const x = ev.clientX - b.left, y = ev.clientY - b.top;
+          const w = t.offsetWidth;
+          t.style.left = `${Math.max(0, Math.min(x + 12, b.width - w))}px`;
+          t.style.top = `${y + 14}px`;
+        },
+        hide() { t.hidden = true; },
+      };
+    }
+    const lines = (r) => [['Students', int(r.students)], ['Dropped out', int(r.dropouts)], ['Dropout rate', fmt(r.dropout_rate)], ['95% range', `${fmt(r.ci_low)} – ${fmt(r.ci_high)}`], ['Graduated', fmt(r.grad_rate)]];
+
+    function rateBars(el, items, opts = {}) {
+      if (!ok('groups')) { el.replaceChildren(mk('p', 'soc-muted', dash.data('groups').status === 'error' ? 'This chart could not load.' : '—')); return; }
+      el.replaceChildren();
+      const tp = tip(el);
+      const overall = ok('summary') ? dash.data('summary').data[0]?.dropout_rate : null;
+      const wrap = mk('div');
+      for (const it of items) {
+        const r = row(it.dim, it.group);
+        const line = mk('div', 'soc-rb');
+        const lab = mk('div', 'lab', it.label);
+        const nn = mk('small', null, r ? `n=${int(r.students)}` : 'n=0');
+        lab.append(nn);
+        const trk = mk('div', 'trk');
+        const val = mk('div', 'val');
+        if (r) {
+          if (r.students < 30) line.classList.add('small');
+          const bar = mk('div', 'bar'); bar.style.background = it.color || C.drop; bar.style.width = `${r.dropout_rate}%`;
+          const ci = mk('div', 'ci'); ci.style.left = `${r.ci_low}%`; ci.style.width = `${Math.max(0, r.ci_high - r.ci_low)}%`;
+          trk.append(bar, ci);
+          const v = markG(mk('span', null, fmt(r.dropout_rate)), it.dim, it.group, 'dropout_rate');
+          val.append(v);
+          if (opts.share) val.append(markG(mk('small', null, `${Math.round(r.share_of_dropouts)}% of dropouts`), it.dim, it.group, 'share_of_dropouts'));
+          line.addEventListener('pointermove', (ev) => tp.show(ev, it.label, [...lines(r), ['Share of all dropouts', fmt(r.share_of_dropouts)]], r.students < 30));
+          line.addEventListener('pointerleave', () => tp.hide());
+        } else val.append(mk('span', null, '—'));
+        if (overall != null) { const ref = mk('div', 'ref'); ref.style.left = `${overall}%`; trk.append(ref); }
+        line.append(lab, trk, val);
+        wrap.append(line);
+      }
+      const foot = mk('div', 'soc-foot');
+      foot.append(mk('i'), mk('span', null, `Everyone in view: ${fmt(overall)}`));
+      el.append(wrap, foot);
+    }
+
+    function heat(el, rowsL, colsL, dim, rowTitle, colTitle) {
+      if (!ok('groups')) { el.replaceChildren(mk('p', 'soc-muted', dash.data('groups').status === 'error' ? 'This chart could not load.' : '—')); return; }
+      el.replaceChildren();
+      const tp = tip(el);
+      const g = mk('div', 'soc-heat');
+      g.append(mk('div', 'h', ''), ...colsL.map((c) => mk('div', 'h', c.label)));
+      for (const r of rowsL) {
+        g.append(mk('div', 'rh', r.label));
+        for (const c of colsL) {
+          const key = `${r.key} / ${c.key}`;
+          const d = row(dim, key);
+          const cell = mk('div', 'c');
+          if (d) {
+            cell.style.background = ramp(d.dropout_rate);
+            cell.style.color = d.dropout_rate >= 50 ? '#ffffff' : '#1a1a1a';
+            if (d.students < 30) cell.style.opacity = '.55';
+            cell.append(markG(mk('b', null, fmt(d.dropout_rate)), dim, key, 'dropout_rate'), mk('small', null, `n=${int(d.students)}`));
+            cell.addEventListener('pointermove', (ev) => tp.show(ev, `${r.label} · ${c.label}`, lines(d), d.students < 30));
+            cell.addEventListener('pointerleave', () => tp.hide());
+          } else { cell.style.background = 'color-mix(in oklab, var(--color-fg) 6%, transparent)'; cell.append(mk('b', null, '—'), mk('small', null, 'n=0')); }
+          g.append(cell);
+        }
+      }
+      const sc = mk('div', 'soc-scale');
+      sc.append(mk('span', null, `${rowTitle} × ${colTitle} · 0%`), ...RAMP.map((c) => { const i = mk('i'); i.style.background = c; return i; }), mk('span', null, '100% dropout'));
+      el.append(g, sc);
+    }
+    return { C, fmt, int, ok, row, mk, rateBars, heat, tip, markG };
+  })();
+
+  // ---------- Filters ----------
+  const FILTERS = ['program', 'tuition', 'scholarship', 'attendance', 'gender', 'age_group'];
+  const FLAGS = ['flag_tuition', 'flag_sem1', 'flag_debtor', 'flag_noscholar', 'flag_age25'];
+  for (const f of FILTERS) document.querySelectorAll(`#f-${f}`).forEach((s) => s.addEventListener('change', () => dash.setParams({ [f]: s.value || '' })));
+  for (const f of FLAGS) document.querySelectorAll(`#${f}`).forEach((c) => c.addEventListener('change', () => dash.setParams({ [f]: c.checked })));
+  document.querySelectorAll('#reset').forEach((b) => b.addEventListener('click', () => dash.setParams({ program: '', tuition: '', scholarship: '', attendance: '', gender: '', age_group: '' })));
+  window.socSort = 'rate';
+  for (const [id, mode] of [['sort-rate', 'rate'], ['sort-count', 'count']]) {
+    document.querySelectorAll(`#${id}`).forEach((b) => b.addEventListener('click', () => {
+      window.socSort = mode;
+      document.querySelectorAll('#sort-rate').forEach((x) => x.setAttribute('aria-pressed', String(mode === 'rate')));
+      document.querySelectorAll('#sort-count').forEach((x) => x.setAttribute('aria-pressed', String(mode === 'count')));
+      dash.draw('programs');
+    }));
+  }
+  dash.onData(() => {
+    const p = dash.params();
+    for (const f of FILTERS) document.querySelectorAll(`#f-${f}`).forEach((s) => { if (document.activeElement !== s && f !== 'program') s.value = p[f] || ''; });
+    for (const f of FLAGS) document.querySelectorAll(`#${f}`).forEach((c) => { c.checked = !!p[f]; });
+    const s = dash.data('summary');
+    const n = s.status === 'ok' ? s.data[0]?.students : null;
+    document.querySelectorAll('#small-warn').forEach((w) => { w.hidden = !(n != null && n < 30); });
+  });
+
+  // ---------- Drawings ----------
+  dash.draw('f-program', (sel) => {
+    const st = dash.data('students');
+    const progs = st.status === 'ok' ? [...new Set(st.data.map((r) => r.program))].sort() : [];
+    sel.replaceChildren(new Option('All programs', ''), ...progs.map((p) => new Option(p, p)));
+    sel.value = dash.params().program || '';
+  });
+
+  const val = (name, src, field, f) => dash.draw(name, (el) => {
+    const d = dash.data(src);
+    el.textContent = d.status === 'ok' && d.data[0] ? f(d.data[0][field]) : '—';
+  });
+  val('k-n', 'summary', 'students', soc.int);
+  val('n-view', 'summary', 'students', soc.int);
+  val('k-drop', 'summary', 'dropout_rate', soc.fmt);
+  val('k-ci-lo', 'summary', 'ci_low', soc.fmt);
+  val('k-ci-hi', 'summary', 'ci_high', soc.fmt);
+  val('k-grad', 'summary', 'grad_rate', soc.fmt);
+  val('k-enr', 'summary', 'enrolled_rate', soc.fmt);
+  val('k-lost', 'summary', 'dropouts', soc.int);
+
+  const gval = (name, dim, group) => dash.draw(name, (el) => {
+    const r = soc.row(dim, group);
+    el.textContent = r ? soc.fmt(r.dropout_rate) : '—';
+  });
+  gval('l-tno', 'tuition', 'Not up to date');
+  gval('l-tyes', 'tuition', 'Up to date');
+  gval('r-tno', 'tuition', 'Not up to date');
+  gval('r-debt', 'debtor', 'Yes');
+  gval('r-nodebt', 'debtor', 'No');
+  gval('r-sch', 'scholarship', 'Yes');
+  gval('r-nosch', 'scholarship', 'No');
+  gval('r-sem', 'sem1_half', 'Under half');
+
+  dash.draw('outcome-bar', (el) => {
+    const s = dash.data('summary');
+    if (s.status !== 'ok' || !s.data[0]) { el.replaceChildren(soc.mk('p', 'soc-muted', s.status === 'error' ? 'This chart could not load.' : '—')); return; }
+    const r = s.data[0];
+    el.replaceChildren();
+    const tp = soc.tip(el);
+    const segs = [['Dropped out', r.dropouts, soc.C.drop, 'dropouts'], ['Still enrolled', r.enrolled, soc.C.enr, 'enrolled'], ['Graduated', r.graduates, soc.C.grad, 'graduates']];
+    const bar = soc.mk('div', 'soc-seg');
+    bar.setAttribute('role', 'img');
+    bar.setAttribute('aria-label', segs.map(([l, v]) => `${l} ${v}`).join(', '));
+    const leg = soc.mk('div', 'soc-legend');
+    for (const [l, v, c, field] of segs) {
+      const share = r.students ? (v / r.students) * 100 : 0;
+      const d = soc.mk('div', null, share >= 9 ? `${Math.round(share)}%` : '');
+      d.style.width = `${share}%`; d.style.background = c;
+      d.addEventListener('pointermove', (ev) => tp.show(ev, l, [['Students', soc.int(v)], ['Share', soc.fmt(share)]]));
+      d.addEventListener('pointerleave', () => tp.hide());
+      bar.append(d);
+      const it = soc.mk('span'); const i = soc.mk('i'); i.style.background = c;
+      const b = soc.mk('b', null, soc.int(v)); b.setAttribute('data-source', 'summary'); b.setAttribute('data-field', field); b.setAttribute('data-row', '0');
+      it.append(i, soc.mk('span', null, l), b);
+      leg.append(it);
+    }
+    el.append(bar, leg);
+  });
+
+  dash.draw('bars-finance', (el) => soc.rateBars(el, [
+    { dim: 'tuition', group: 'Not up to date', label: 'Tuition not up to date' },
+    { dim: 'tuition', group: 'Up to date', label: 'Tuition up to date' },
+    { dim: 'debtor', group: 'Yes', label: 'Has outstanding debt' },
+    { dim: 'debtor', group: 'No', label: 'No outstanding debt' },
+    { dim: 'scholarship', group: 'No', label: 'No scholarship' },
+    { dim: 'scholarship', group: 'Yes', label: 'Scholarship holder', color: soc.C.grad },
+  ], { share: true }));
+
+  dash.draw('heat-ts', (el) => soc.heat(el,
+    [{ key: 'Not up to date', label: 'Behind on tuition' }, { key: 'Up to date', label: 'Tuition paid' }],
+    [{ key: 'No scholarship', label: 'No scholarship' }, { key: 'Scholarship', label: 'Scholarship' }],
+    'tuition_x_scholarship', 'Tuition', 'Scholarship'));
+  dash.draw('heat-tp', (el) => soc.heat(el,
+    [{ key: 'Not up to date', label: 'Behind on tuition' }, { key: 'Up to date', label: 'Tuition paid' }],
+    [{ key: 'Under half', label: 'Passed under half' }, { key: 'Half or more', label: 'Passed half or more' }],
+    'tuition_x_sem1', 'Tuition', '1st semester'));
+  dash.draw('heat-rec', (el) => soc.heat(el,
+    [{ key: 'Under half', label: '1st sem: under half' }, { key: 'Half or more', label: '1st sem: half or more' }],
+    [{ key: 'Under half', label: '2nd: under half' }, { key: 'Half or more', label: '2nd: half or more' }],
+    'sem1_x_sem2', '1st', '2nd semester'));
+
+  dash.draw('cols-sem1', (el) => {
+    if (!soc.ok('groups')) { el.replaceChildren(soc.mk('p', 'soc-muted', dash.data('groups').status === 'error' ? 'This chart could not load.' : '—')); return; }
+    el.replaceChildren();
+    const tp = soc.tip(el);
+    const bands = [['None passed', '0%'], ['Under half', '1–49%'], ['Half or more', '50–99%'], ['All passed', '100%'], ['No units', 'No units']];
+    const cols = soc.mk('div', 'soc-cols');
+    cols.setAttribute('role', 'img');
+    cols.setAttribute('aria-label', 'Dropout rate by share of first-semester courses passed');
+    const labs = soc.mk('div', 'soc-collabs');
+    const overall = soc.ok('summary') ? dash.data('summary').data[0]?.dropout_rate : null;
+    if (overall != null) { const ref = soc.mk('div', 'soc-colref'); ref.style.bottom = `${overall}%`; cols.append(ref); }
+    for (const [g, l] of bands) {
+      const r = soc.row('sem1_pass', g);
+      const c = soc.mk('div', 'soc-col');
+      if (r) {
+        const b = soc.mk('div', 'bar');
+        b.style.height = `${r.dropout_rate}%`;
+        b.style.background = g === 'No units' ? 'var(--cds-chart-muted)' : soc.C.drop;
+        if (r.students < 30) b.style.opacity = '.5';
+        b.append(soc.markG(soc.mk('span', null, soc.fmt(r.dropout_rate)), 'sem1_pass', g, 'dropout_rate'));
+        c.append(b);
+        c.addEventListener('pointermove', (ev) => tp.show(ev, `Passed ${l}`, [['Students', soc.int(r.students)], ['Dropped out', soc.int(r.dropouts)], ['Dropout rate', soc.fmt(r.dropout_rate)], ['95% range', `${soc.fmt(r.ci_low)} – ${soc.fmt(r.ci_high)}`]], r.students < 30));
+        c.addEventListener('pointerleave', () => tp.hide());
+      }
+      cols.append(c);
+      const lb = soc.mk('div', null, l); lb.append(soc.mk('small', null, r ? `n=${soc.int(r.students)}` : 'n=0'));
+      labs.append(lb);
+    }
+    const foot = soc.mk('div', 'soc-foot'); foot.append(soc.mk('i'), soc.mk('span', null, `Everyone in view: ${soc.fmt(overall)}`));
+    el.append(cols, labs, foot);
+  });
+
+  dash.draw('alert', (el) => {
+    const a = dash.data('alert');
+    if (a.status !== 'ok' || !a.data[0]) { el.replaceChildren(soc.mk('p', 'soc-muted', a.status === 'error' ? 'The alert builder could not load.' : '—')); return; }
+    const r = a.data[0];
+    const p = dash.params();
+    const any = ['flag_tuition', 'flag_sem1', 'flag_debtor', 'flag_noscholar', 'flag_age25'].some((f) => p[f]);
+    el.replaceChildren();
+    const meter = (label, field, color, sub, right) => {
+      const m = soc.mk('div', 'soc-meter');
+      const top = soc.mk('div', 'top'); const b = soc.mk('b', null, soc.fmt(r[field]));
+      b.setAttribute('data-source', 'alert'); b.setAttribute('data-field', field); b.setAttribute('data-row', '0');
+      top.append(soc.mk('span', null, label), b);
+      const trk = soc.mk('div', 'trk'); const f = soc.mk('div', 'fill'); f.style.width = `${r[field]}%`; f.style.background = color; trk.append(f);
+      const s = soc.mk('div', 'sub'); s.append(soc.mk('span', null, sub), right);
+      m.append(top, trk, s);
+      return m;
+    };
+    const cnt = (field, txt) => { const e = soc.mk('b', null, `${soc.int(r[field])}${txt}`); e.setAttribute('data-source', 'alert'); e.setAttribute('data-field', field); e.setAttribute('data-row', '0'); return e; };
+    el.append(
+      meter('Students to contact', 'workload', soc.C.navy, 'share of students flagged', cnt('flagged', ' students')),
+      meter('Dropouts caught', 'coverage', soc.C.drop, 'share of eventual dropouts on the list', cnt('flagged_dropouts', ' dropouts')),
+      meter('Hit rate', 'hit_rate', soc.C.green, 'flagged students who later dropped out', soc.mk('span', null, `not flagged: ${soc.fmt(r.unflagged_rate)}`)),
+    );
+    const read = soc.mk('p', 'soc-read',
+      !any ? 'Check at least one sign to build a list.'
+        : `Contacting ${Math.round(r.workload)}% of students reaches ${Math.round(r.coverage)}% of those who later dropped out. ${r.coverage < 50 ? 'Most would be missed, so add a sign.' : r.workload > 50 ? 'That is a large list. Consider fewer signs.' : 'That is a workable list for an advising team.'}`);
+    el.append(read);
+  });
+
+  dash.draw('programs', (el) => {
+    const d = dash.data('programs');
+    if (d.status !== 'ok') { el.replaceChildren(soc.mk('p', 'soc-muted', d.status === 'error' ? 'This chart could not load.' : '—')); return; }
+    el.replaceChildren();
+    const tp = soc.tip(el);
+    const sel = dash.params().program || '';
+    const rows = [...d.data].sort((a, b) => (window.socSort === 'count' ? b.dropouts - a.dropouts : b.dropout_rate - a.dropout_rate));
+    const maxCount = Math.max(1, ...rows.map((r) => r.dropouts));
+    for (const r of rows) {
+      const line = soc.mk('div', 'soc-rb click');
+      if (r.students < 30) line.classList.add('small');
+      if (sel === r.program) line.classList.add('sel');
+      line.setAttribute('role', 'button');
+      line.tabIndex = 0;
+      line.setAttribute('aria-pressed', String(sel === r.program));
+      const lab = soc.mk('div', 'lab', r.program); lab.append(soc.mk('small', null, `n=${soc.int(r.students)}`));
+      const trk = soc.mk('div', 'trk');
+      const bar = soc.mk('div', 'bar');
+      bar.style.width = window.socSort === 'count' ? `${(r.dropouts / maxCount) * 100}%` : `${r.dropout_rate}%`;
+      bar.style.background = sel === r.program ? soc.C.green : soc.C.drop;
+      trk.append(bar);
+      const v = soc.mk('div', 'val');
+      const main = window.socSort === 'count' ? soc.mk('span', null, soc.int(r.dropouts)) : soc.mk('span', null, soc.fmt(r.dropout_rate));
+      main.setAttribute('data-source', 'programs'); main.setAttribute('data-field', window.socSort === 'count' ? 'dropouts' : 'dropout_rate'); main.setAttribute('data-where', `program=${r.program.replace(/%/g, '%25').replace(/&/g, '%26').replace(/=/g, '%3D')}`);
+      v.append(main, soc.mk('small', null, window.socSort === 'count' ? soc.fmt(r.dropout_rate) : `${soc.int(r.dropouts)} lost`));
+      line.append(lab, trk, v);
+      const pick = () => dash.setParams({ program: sel === r.program ? '' : r.program });
+      line.addEventListener('click', pick);
+      line.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
+      line.addEventListener('pointermove', (ev) => tp.show(ev, r.program, [['Students', soc.int(r.students)], ['Dropped out', soc.int(r.dropouts)], ['Dropout rate', soc.fmt(r.dropout_rate)], ['', sel === r.program ? 'Select to clear' : 'Select to filter']], r.students < 30));
+      line.addEventListener('pointerleave', () => tp.hide());
+      el.append(line);
+    }
+  });
+
+  dash.draw('bars-age', (el) => soc.rateBars(el, ['Under 21', '21-24', '25-34', '35+'].map((g) => ({ dim: 'age_group', group: g, label: g === '21-24' ? '21–24' : g === '25-34' ? '25–34' : g }))));
+  dash.draw('bars-ga', (el) => soc.rateBars(el, [
+    { dim: 'gender', group: 'Female', label: 'Women' }, { dim: 'gender', group: 'Male', label: 'Men' },
+    { dim: 'attendance', group: 'Daytime', label: 'Daytime' }, { dim: 'attendance', group: 'Evening', label: 'Evening' },
+  ]));
+  dash.draw('bars-route', (el) => {
+    const routes = soc.ok('groups') ? dash.data('groups').data.filter((r) => r.dimension === 'admission_route').sort((a, b) => b.dropout_rate - a.dropout_rate).map((r) => r.group) : [];
+    soc.rateBars(el, routes.map((g) => ({ dim: 'admission_route', group: g, label: g })));
+  });
+</script>

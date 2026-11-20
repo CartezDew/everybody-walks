@@ -9,11 +9,13 @@ import { RolePicker, Workspace } from './components/Workspaces.jsx';
 import FlagBuilder from './components/FlagBuilder.jsx';
 import ExplorerNav from './components/ExplorerNav';
 import AIInsights from './components/AIInsights';
+import Demographics from './components/Demographics';
 
 const OUTCOME_COLORS = ['var(--drop)', 'var(--enr)', 'var(--grad)'];
 const OUTCOME_NAMES = ['Dropout', 'Enrolled', 'Graduate'];
 const NAV = [
   ['overview', 'Overview'],
+  ['demographics', 'Demographics'],
   ['money', 'Financial strain'],
   ['academic', 'Academic signs'],
   ['alert', 'Alert builder'],
@@ -158,7 +160,7 @@ export default function App() {
           <a className="brand" href="#top" onClick={(e) => { e.preventDefault(); go('top'); }}>
             <Logo />
             <span className="brand-t">
-              <b>Everybody Walks</b>
+              <b>Everyone Walks</b>
               <small>Student retention dashboard</small>
             </span>
           </a>
@@ -194,7 +196,7 @@ export default function App() {
               <button className="cover-action cover-secondary" onClick={() => go('overview')}>View outcomes <span aria-hidden="true">→</span></button>
             </div>
           </div>
-          <div className="cover-art" aria-hidden="true"><div className="record"/><img className="cover-mascot" src="varsity-bear.webp" alt="" width="760" height="760" fetchPriority="high"/></div>
+          <div className="cover-art" aria-hidden="true"><div className="record"/><img className="cover-mascot" src="varsity-bear.webp" alt="" width="760" height="760" fetchpriority="high"/></div>
         </div>
       </section>
       <div className="source-line"><span>Study cohort</span><b>{num(all.n)} students</b><i/>One Portuguese institution<i/>2008/09–2018/19</div>
@@ -213,7 +215,7 @@ export default function App() {
         {page==='workspace' ? <Workspace role={role} list={list} groups={G} summary={S} onExplore={go}/> : <>
         <ExplorerNav items={NAV} go={go} hasData={S.n > 0}/>
         <div className="explorer-content">
-        {!S.n ? <div id="overview"><p className="empty-report" role="status">No students match these filters. Reset the filters to compare outcomes.</p><DatasetLinks/></div> : <>
+        {!S.n ? <div id="overview"><p className="empty-report" role="status">No students match these filters. Reset the filters to compare outcomes.</p><DatasetLinks/><Demographics students={STUDENTS} filters={filters} setFilters={setFilters} /></div> : <>
         <Section id="overview" kicker="01 · The problem" title="Student outcomes in the selected cohort" intro="Outcomes are recorded at the end of each student's normal program length. 'Enrolled' means the student was still studying, which is neither a graduation nor a dropout.">
           {outcomeCards}
           <div className="wide"><DatasetLinks/></div>
@@ -244,7 +246,9 @@ export default function App() {
           </Card>
         </Section>
 
-        <Section id="money" kicker="02 · Main story" title="How do outcomes vary with financial strain?" intro="Compare recorded outcomes within each tuition, scholarship, and debt group. The filters set the students included in each comparison.">
+        <Demographics students={STUDENTS} filters={filters} setFilters={setFilters} />
+
+        <Section id="money" kicker="03 · Main story" title="How do outcomes vary with financial strain?" intro="Compare recorded outcomes within each tuition, scholarship, and debt group. The filters set the students included in each comparison.">
           <Card
             wide
             title="Dropout rate by tuition status"
@@ -280,7 +284,7 @@ export default function App() {
           </Card>
         </Section>
 
-        <Section id="academic" kicker="03 · Closing the gap" title="How does first-term progress relate to dropout?" intro="After the first semester, advisors can compare students by the share of enrolled units they passed. Students with no enrolled units form a separate group.">
+        <Section id="academic" kicker="04 · Closing the gap" title="How does first-term progress relate to dropout?" intro="After the first semester, advisors can compare students by the share of enrolled units they passed. Students with no enrolled units form a separate group.">
           <Card
             wide
             title="Dropout rate by share of 1st-semester courses passed"
@@ -325,13 +329,13 @@ export default function App() {
           </Card>
         </Section>
 
-        <Section id="alert" kicker="04 · Interactive" title="Build your own early-alert list" intro="Pick the signs your office would act on. The meters show how many students you would contact, what share of recorded dropouts met the rule, and what share of the selected group dropped out. The filters at the top still apply.">
+        <Section id="alert" kicker="05 · Interactive" title="Build your own early-alert list" intro="Pick the signs your office would act on. The meters show how many students you would contact, what share of recorded dropouts met the rule, and what share of the selected group dropped out. The filters at the top still apply.">
           <Card wide title="Early-alert builder" takeaway="Select a second sign to see which additional students meet the rule. Students who meet several signs count once.">
             <FlagBuilder students={list} />
           </Card>
         </Section>
 
-        <Section id="who" kicker="05 · Drill down" title="Who is leaving, and from which programs?" intro="Dropout is not spread evenly. Use rates and counts together: a small program with a high rate and a large program with a modest rate can both need attention.">
+        <Section id="who" kicker="06 · Drill down" title="Who is leaving, and from which programs?" intro="Dropout is not spread evenly. Use rates and counts together: a small program with a high rate and a large program with a modest rate can both need attention.">
           <Card
             wide
             title="Programs: size vs dropout rate"
@@ -354,7 +358,7 @@ export default function App() {
           </Card>
         </Section>
 
-        <Section id="more" kicker="06 · Beyond the proposal" title="More signals we tested" intro="Some fields show clear patterns. Others show no consistent pattern, and reporting those keeps the main story honest.">
+        <Section id="more" kicker="07 · Beyond the proposal" title="More signals we tested" intro="Some fields show clear patterns. Others show no consistent pattern, and reporting those keeps the main story honest.">
           <Card title="Admission grade (fifths of all students)" takeaway={G.adm[0].n && G.adm[4].n ? `Dropout was ${pct(G.adm[0].dropRate)} in the lowest admission-grade band and ${pct(G.adm[4].dropRate)} in the highest.` : 'Grade cutoffs come from the full study and stay fixed when you filter.' } table={{ rows: G.adm, cols: rateCols('Admission grade') }}>
             <Columns rows={G.adm} overall={S.dropRate} xLabel="Admission grade quintile (low → high)" />
           </Card>
@@ -371,7 +375,7 @@ export default function App() {
 
         </>}
         <AIInsights students={list}/>
-        <Section id="act" kicker="07 · What to do" title="Recommendations" intro="These suggestions use the full study cohort, across all filter settings. A campus pilot would be needed to learn whether outreach helps.">
+        <Section id="act" kicker="08 · What to do" title="Recommendations" intro="These suggestions use the full study cohort, across all filter settings. A campus pilot would be needed to learn whether outreach helps.">
           <div className="recs wide">
             {[
               ['1', 'Check when payment information becomes available', `Ask billing staff when a missed payment can first trigger an offer of help. In the full cohort, ${pct(H.t[0].dropRate, 0)} of students behind on tuition dropped out.`, 'Financial aid + advising'],
@@ -389,7 +393,7 @@ export default function App() {
           </div>
         </Section>
 
-        <Section id="methods" kicker="08 · Transparency" title="Data, methods, and limitations">
+        <Section id="methods" kicker="09 · Transparency" title="Data, methods, and limitations">
           <div className="wide"><DatasetLinks/></div>
           <Card title="Data source">
             <ul className="plain">
@@ -418,7 +422,7 @@ export default function App() {
               <li>Nationality and parent education/occupation remain numeric codes and are not analyzed here.</li>
             </ul>
           </Card>
-          <Card title="Behind Everybody Walks" takeaway="Everybody Walks is our nod to Jesus Walks and Graduation Day on The College Dropout. For a student, walking means crossing the graduation stage. We built this dashboard around the check-ins that can happen along the way.">
+          <Card title="Behind Everyone Walks" takeaway="Everyone Walks is our nod to Jesus Walks and Graduation Day on The College Dropout. For a student, walking means crossing the graduation stage. We built this dashboard around the check-ins that can happen along the way.">
             <ul className="plain">
               <li><b>Merachew Gebremariam:</b> topic, proposal, number verification, poster text.</li>
               <li><b>Cartez Dewberry:</b> project plan, dashboard design and build, poster production.</li>
@@ -432,7 +436,7 @@ export default function App() {
 
       <footer className="footer">
         <div className="footer-in">
-          <div className="brand"><Logo size={28} /><span className="brand-t"><b>Everybody Walks</b><small>Team 4 · MSA 8030 · Georgia State University · Fall 2026</small></span></div>
+          <div className="brand"><Logo size={28} /><span className="brand-t"><b>Everyone Walks</b><small>Team 4 · MSA 8030 · Georgia State University · Fall 2026</small></span></div>
           <p className="footer-credit"><GraduationCap/><span>Student project at Georgia State University. The records describe historical outcomes at a Portuguese institution.</span></p>
         </div>
       </footer>
