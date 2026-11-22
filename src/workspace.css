@@ -358,3 +358,123 @@ html:has(.explorer-layout) { scroll-padding-top: calc(var(--explorer-top,150px) 
   .graduation-note { display: grid; grid-template-columns: minmax(200px, 1fr) 1.5fr; align-items: center; }
   .graduation-note .decision-copy { border: 0; }
 }
+
+/* The sleeve opens in three beats: vinyl, title, then the die-cut mascot. */
+@media (prefers-reduced-motion: no-preference) {
+  .cover-art .record {
+    animation: vinyl-drop 1250ms cubic-bezier(.16,.8,.22,1) backwards;
+  }
+  .cover-art .record::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: conic-gradient(from 30deg, transparent 8%, #b1d7ff44 15%, transparent 23% 58%, #b1d7ff33 66%, transparent 74%);
+    animation: groove-reflection 1350ms ease-out both;
+  }
+  .sleeve h1 {
+    animation: title-pull 760ms cubic-bezier(.19,1,.22,1) backwards;
+  }
+  .sleeve h1 em {
+    display: inline-block;
+    padding-right: .12em;
+    animation: title-print 720ms cubic-bezier(.2,.75,.18,1) 180ms backwards;
+  }
+  .cover-art .cover-mascot {
+    transform-origin: 54% 96%;
+    animation: mascot-unpack 1080ms cubic-bezier(.2,.75,.3,1) 120ms backwards;
+  }
+  .cover-credit::before {
+    transform-origin: left;
+    animation: credit-mark 540ms ease-out backwards;
+  }
+  @keyframes vinyl-drop {
+    from { margin-left: 16%; margin-top: 8%; rotate: -32deg; scale: .76; transform-origin: 0 0; }
+    to { margin-left: 0; margin-top: 0; rotate: 0deg; scale: 1; transform-origin: 0 0; }
+  }
+  @keyframes groove-reflection {
+    0% { transform: rotate(-100deg); opacity: 0; }
+    25% { opacity: 1; }
+    100% { transform: rotate(85deg); opacity: 0; }
+  }
+  @keyframes title-pull {
+    from { clip-path: inset(-15% -5% 110% -5%); }
+    to { clip-path: inset(-15% -5% -20% -5%); }
+  }
+  @keyframes title-print {
+    from { clip-path: inset(-20% 100% -20% -5%); transform: skewX(-10deg); }
+    to { clip-path: inset(-20% -5% -20% -5%); transform: skewX(0); }
+  }
+  @keyframes mascot-unpack {
+    0% { transform: translateY(94%) rotate(9deg) scale(.94); }
+    64% { transform: translateY(-3%) rotate(-2deg) scale(1.01); }
+    84% { transform: translateY(1%) rotate(.6deg); }
+    100% { transform: none; }
+  }
+  @keyframes credit-mark {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+  }
+}
+
+.kpi-featured { container-type: inline-size; }
+.outcome-glyph {
+  position: absolute; right: 12px; top: 50%; translate: 0 -50%;
+  width: clamp(32px, 19cqw, 52px); color: var(--accent); pointer-events: none;
+}
+.glyph-track, .glyph-arc { fill: none; stroke: currentColor; stroke-width: 4; }
+.glyph-track, .glyph-student { opacity: .17; }
+.glyph-student { fill: currentColor; }
+.glyph-student.active { opacity: 1; }
+@container (max-width: 205px) {
+  .outcome-glyph { top: 10px; right: 8px; translate: none; width: 20px; }
+  .kpi-featured .kpi-label { padding-right: 20px; }
+}
+@media screen and (prefers-reduced-motion: no-preference) {
+  .kpi-entered .glyph-arc { animation: outcome-arc 850ms cubic-bezier(.18,.72,.22,1) backwards; }
+  .kpi-entered .glyph-student {
+    transform-box: fill-box; transform-origin: center;
+    animation: outcome-student 350ms ease-out calc(90ms + var(--order) * 16ms) backwards;
+  }
+  @keyframes outcome-arc { from { stroke-dasharray: 0 1; } to { stroke-dasharray: var(--share) 1; } }
+  @keyframes outcome-student { from { transform: scale(0); } to { transform: scale(1); } }
+}
+
+@media screen and (prefers-reduced-motion: no-preference) {
+  .leadership-entered h2,
+  .leadership-entered .metric,
+  .leadership-entered .decision-note {
+    animation: demo-enter 500ms ease-out backwards;
+  }
+  .leadership-entered .metric:nth-child(1) { animation-delay: 80ms; }
+  .leadership-entered .metric:nth-child(2) { animation-delay: 150ms; }
+  .leadership-entered .metric:nth-child(3) { animation-delay: 220ms; }
+  .leadership-entered .measure-track i {
+    transform-origin: left;
+    animation: demo-grow 700ms cubic-bezier(.16,.8,.22,1) 270ms backwards;
+  }
+  .leadership-entered .decision-note { animation-delay: 360ms; }
+}
+
+.outreach-plan fieldset { border:0; padding:0; margin:0; min-width:0; }
+.outreach-plan legend, .outreach-plan h4 { font:600 21px Georgia,serif; margin:0 0 12px; }
+.plan-choice { display:flex; align-items:flex-start; gap:10px; padding:12px; margin-bottom:8px; border:1px solid var(--border); border-radius:8px; cursor:pointer; }
+.plan-choice.selected { background:var(--accent-bg); border-color:var(--brand); }
+.plan-choice input { accent-color:var(--brand); }
+.plan-choice small, .plan-staffing small { display:block; color:var(--ink-2); }
+.outreach-plan .flag-results p { margin:0 0 12px; }
+.plan-staffing { border-top:1px solid var(--border); padding-top:12px; }
+.plan-staffing summary { font-weight:650; color:var(--brand); cursor:pointer; }
+.plan-staffing label { display:grid; gap:6px; margin:14px 0 6px; }
+.plan-staffing input { width:9em; padding:8px; font:inherit; }
+.plan-staffing [role=status] { padding-top:8px; }
+
+.context-comparison { width:100%; border-collapse:collapse; font-size:14px; font-variant-numeric:tabular-nums; }
+.context-comparison + .context-comparison { margin-top:20px; }
+.context-comparison th,.context-comparison td { padding:7px 4px; text-align:right; border-bottom:1px solid var(--grid); }
+.context-comparison tr > :first-child { text-align:left; }
+.context-comparison thead th { color:var(--ink-2); font-size:13px; vertical-align:bottom; }
+.context-comparison td { white-space:nowrap; }
+.context-comparison td:last-child { width:25%; }
+.context-track { display:block; height:4px; margin-top:3px; background:var(--surface-2); }
+.context-track i { display:block; height:100%; background:var(--comparison); }

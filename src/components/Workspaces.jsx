@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { BANDS, MIN_N, num, pct, summarize } from '../lib/data';
 import { Card } from './ui';
-import { RateKey, rateFill } from './charts';
+import { RateKey, rateFill, useInView } from './charts';
 import FlagBuilder from './FlagBuilder';
 
 export const ROLES = [
-  { id: 'leadership', label: 'University leadership', task: 'Allocate resources', question: 'What does a first-term check-in add?' },
+  { id: 'leadership', label: 'University leadership', task: 'Allocate resources', question: 'Where can financial support reach students?' },
   { id: 'advising', label: 'Academic advising', task: 'Plan academic check-ins', question: 'Who could benefit from a first-term check-in?' },
   { id: 'success', label: 'Student success', task: 'Coordinate support', question: 'Where do financial and academic needs overlap?' },
   { id: 'enrollment', label: 'Enrollment management', task: 'Compare programs', question: 'Which programs account for the most departures?' },
@@ -35,7 +35,7 @@ const rate = (x, n) => n ? pct(x / n) : '—';
 function Metric({ label, value, detail }) {
   return <div className="metric"><span>{label}</span><strong>{value}</strong><small>{detail}</small></div>;
 }
-function OutreachComparison({ tuition, additional, summary }) {
+export function OutreachComparison({ tuition, additional, summary }) {
   const departures = summary.dropouts;
   const barWidth = count => departures ? pct(count / departures, 3) : '0%';
   const scenarios = [
@@ -94,6 +94,7 @@ function Comparison({ title, rows, note, overall, count = false }) {
 }
 
 export function Workspace({ role, list, groups, summary: s, onExplore }) {
+  const [reportRef, inView] = useInView({ threshold: 0.12 });
   const [rank, setRank] = useState('count');
   const profile = ROLES.find(r => r.id === role);
   const low = summarize(list.filter(r => r.pass1 !== null && r.pass1 < .5));
@@ -104,10 +105,11 @@ export function Workspace({ role, list, groups, summary: s, onExplore }) {
   let metrics, chart, action, link;
   switch(role) {
     case 'leadership':
-      metrics = null;
+      metrics = <>{[[late,'Tuition behind'],[groups.debtor[0],'Outstanding debt'],[groups.scholar[0],'Scholarship holders']].map(([row,label]) =>
+        <Metric key={label} label={label} value={rate(row.dropouts,row.n)} detail={num(row.dropouts)+' of '+num(row.n)+' students dropped out'}/>)}</>;
       chart = <Comparison overall={s.dropRate} title="Dropout rate by tuition status" rows={groups.tuition} note="The denominator includes everyone in each tuition group, including students still enrolled. Open Table for 95% Wilson intervals."/>;
-      action = 'Check appointment capacity and when grades and payment records become available. First-term results arrive after the semester. The study does not date the tuition records.';
-      link = 'alert'; break;
+      action = 'Financial aid can offer payment plans or emergency aid after a missed payment. Confirm when billing records are available locally. Advisors can offer referrals even when tuition is current.';
+      link = 'money'; break;
     case 'advising':
       metrics = <>{base}<Metric label="Passed under half" value={num(low.n)} detail="students with first-term results"/><Metric label="Dropout in that group" value={rate(low.dropouts,low.n)} detail={num(low.dropouts)+' recorded dropouts'}/></>;
       chart = <Comparison overall={s.dropRate} title="Dropout rate by first-term units passed" rows={groups.bands.map((r,i)=>({...r,label:BANDS[i].long}))} note="Pass rate is approved units divided by enrolled units. Students with zero enrolled units appear separately."/>;
@@ -124,17 +126,17 @@ export function Workspace({ role, list, groups, summary: s, onExplore }) {
       chart=<><div className="rank-controls"><span>Rank programs by</span>{['count','rate'].map(k=><button key={k} aria-pressed={rank===k} onClick={()=>setRank(k)}>Dropout {k}</button>)}</div><Comparison overall={s.dropRate} title={'Top programs by dropout '+rank} rows={programs.slice(0,5)} count={rank==='count'} note="Counts describe the number of departures. Rates account for program size. Small groups can move sharply with a single departure."/></>;
       action='Use counts to plan staffing and rates to identify programs for a closer review with department leads.';link='who';break;}
     default:
-      metrics=null; chart=<Card title="Outreach simulator" wide note="These rules are exploratory. Tuition timing is unknown. Semester results become available only after the term."><FlagBuilder students={list}/></Card>;
+      metrics=null; chart=<Card title="Compare outreach plans" wide note="These rules are exploratory. Tuition timing is unknown. Semester results become available only after the term."><FlagBuilder students={list}/></Card>;
       action='Compare the number of students who meet a rule with the appointments your office can offer. Coverage measures overlap with historical dropout outcomes.';link='alert';
   }
-  return <section className="work-report" id="workspace" aria-labelledby="work-title">
+  return <section ref={reportRef} className={'work-report' + (role === 'leadership' && inView ? ' leadership-entered' : '')} id="workspace" aria-labelledby="work-title">
     <span className="section-label">{profile.label}</span><h2 id="work-title" tabIndex={-1}>{profile.question}</h2>
-    {s.n ? <>{role === 'leadership' && <OutreachComparison tuition={late} additional={groups.heatTP[1][0]} summary={s}/>}
+    {s.n ? <>
       {metrics && <div className="metric-strip">{metrics}</div>}<div className="decision-grid"><div className="decision-chart">{chart}</div>
       <aside className={'decision-note' + (graduationView ? ' graduation-note' : '')}>
         {graduationView && <img className="graduation-scene" src="graduation-day.webp" width="900" height="600" loading="lazy" alt="Illustration of three graduates celebrating together in blue caps and gowns."/>}
         <div className="decision-copy"><h3>{graduationView ? 'Supporting students toward graduation' : role === 'leadership' ? 'Before scheduling outreach' : 'What your team can do'}</h3>
-          <p>{action}</p><button onClick={()=>onExplore(link)}>{role === 'leadership' ? 'Compare outreach rules' : 'Explore the evidence'} <span aria-hidden="true">↗</span></button>
+          <p>{action}</p><button onClick={()=>onExplore(link)}>{role === 'leadership' ? 'Explore financial strain' : 'Explore the evidence'} <span aria-hidden="true">↗</span></button>
         </div></aside></div></> : <p className="empty-report">No matching students. Reset the cohort filters to see this workspace.</p>}
   </section>;
 }

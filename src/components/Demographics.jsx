@@ -33,6 +33,7 @@ function DemographicChart({ config, students, filters, setFilters }) {
     (student) => student[field], keys, labels,
   ), [students, filters, key, field, keys, labels]);
   const total = rows.reduce((sum, row) => sum + row.n, 0);
+  const selected = rows[values.indexOf(filters[key])];
   const polar = (angle, radius) => [50 + radius * Math.cos(angle), 50 + radius * Math.sin(angle)];
   const select = (value) => setFilters((current) => ({
     ...current,
@@ -41,7 +42,7 @@ function DemographicChart({ config, students, filters, setFilters }) {
 
   return <article ref={ref} className={`demographic-card demo-${key}${visible ? ' demo-visible' : ''}`} aria-label={title}>
     <h3>{title}</h3>
-    <p>{num(total)} students in this comparison</p>
+    <p>Share of students · {num(total)} in comparison</p>
     <div className={kind === 'pie' ? 'demo-pie-layout' : 'demo-bars-layout'}>
     {kind === 'pie' && <svg className="demographic-pie" viewBox="-5 -18 110 124" aria-label={`${title} chart`}>
       <circle cx="50" cy="50" r="45" fill="var(--surface-2)" />
@@ -88,6 +89,7 @@ function DemographicChart({ config, students, filters, setFilters }) {
       })}
     </div>
     </div>
+    {selected && <p role="status">Selected: {selected.label} · {num(selected.n)} students. {selected.n ? `${num(selected.dropouts)} dropped out (${pct(selected.dropRate)}).` : 'No matching students.'}</p>}
   </article>;
 }
 

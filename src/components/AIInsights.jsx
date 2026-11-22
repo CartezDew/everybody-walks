@@ -43,7 +43,7 @@ const topics = [
 ];
 
 export default function AIInsights({ students }) {
-  const [topicId, setTopicId] = useState(topics[0].id);
+  const [topicId, setTopicId] = useState('financial-review');
   const topic = topics.find(item => item.id === topicId);
   const eligible = students.filter(topic.eligible);
   const groups = [

@@ -5,7 +5,7 @@ import {
 } from './lib/data.js';
 import { Donut, RateBars, Columns, StackedOutcomes, Heatmap, CourseScatter, rateCols } from './components/charts.jsx';
 import { Logo, GraduationCap, Kpi, Card, Section, FilterBar } from './components/ui.jsx';
-import { RolePicker, Workspace } from './components/Workspaces.jsx';
+import { RolePicker, Workspace, OutreachComparison } from './components/Workspaces.jsx';
 import FlagBuilder from './components/FlagBuilder.jsx';
 import ExplorerNav from './components/ExplorerNav';
 import AIInsights from './components/AIInsights';
@@ -18,7 +18,7 @@ const NAV = [
   ['demographics', 'Demographics'],
   ['money', 'Financial strain'],
   ['academic', 'Academic signs'],
-  ['alert', 'Alert builder'],
+  ['alert', 'Outreach planner'],
   ['who', 'Who leaves'],
   ['more', 'More signals'],
   ['insights', 'AI Insights'],
@@ -30,6 +30,16 @@ const cell = (list, f) => {
   const s = summarize(list.filter(f));
   return s;
 };
+
+function DropoutComparison({ rows, label }) {
+  return <table className="context-comparison">
+    <thead><tr><th scope="col">{label}</th><th scope="col">Left / students</th><th scope="col">Dropout rate</th></tr></thead>
+    <tbody>{rows.map(row => <tr key={row.key}>
+      <th scope="row">{row.label}</th><td>{num(row.dropouts)} / {num(row.n)}</td>
+      <td><b>{row.n ? pct(row.dropRate) : '—'}</b><span className="context-track" aria-hidden="true"><i style={{width: pct(row.dropRate)}} /></span></td>
+    </tr>)}</tbody>
+  </table>;
+}
 
 function DatasetLinks() {
   return <div className="dataset-links">
@@ -116,6 +126,8 @@ export default function App() {
     return { tuition, debtor, scholar, bands, bands2, age, gender, attend, displaced, courses, coursesAll, app, marital, special, intl, adm, unemp, heatTS, heatTP, traj, grades, tRows, scCols, pCols };
   }, [list, filters]);
 
+  const lowPassGroup = summarize(list.filter(s => s.pass1 !== null && s.pass1 < 0.5));
+  const higherPassGroup = summarize(list.filter(s => s.pass1 !== null && s.pass1 >= 0.5));
   const tuitionMax = 1;
   const [role, setRole] = useState('leadership');
   const [page, setPage] = useState(() => NAV.some(([id]) => '#'+id === location.hash) ? 'explorer' : 'workspace');
@@ -140,9 +152,9 @@ export default function App() {
 
   const outcomeCards = (
     <div className="kpis wide" role="group" aria-label="Outcomes in the selected cohort">
-      <Kpi featured icon={<GraduationCap/>} label="Graduation rate" value={S.gradRate} format={pct}
+      <Kpi featured="graduation" icon={<GraduationCap/>} label="Graduation rate" value={S.gradRate} format={pct}
         sub={`${num(S.graduates)} of ${num(S.n)} students`} accent="var(--grad)" />
-      <Kpi featured label="Dropout rate" value={S.dropRate} format={pct}
+      <Kpi featured="dropout" label="Dropout rate" value={S.dropRate} format={pct}
         sub={`${num(S.dropouts)} of ${num(S.n)} students`} accent="var(--drop)" />
       <Kpi label="Students" value={S.n} format={v => num(Math.round(v))} sub="in selected cohort" />
       <Kpi label="Still enrolled" value={S.enrRate} format={pct} sub={`${num(S.enrolled)} students`} />
@@ -188,12 +200,12 @@ export default function App() {
           <div className="cover-copy">
             <div className="cover-intro">
               <p className="cover-credit">MSA 8030 <i/> Team 4 <i/> Fall 2026</p>
-              <h1 id="cover-title">Who could use<br/>a <em>check-in?</em></h1>
-              <p className="cover-lede">When advising time is limited, where do you start? Explore how tuition and first-term progress relate to staying in college.</p>
+              <h1 id="cover-title">When the money<br/><em>runs short</em></h1>
+              <p className="cover-lede">Where could financial aid and advising make a difference?</p>
             </div>
             <div className="cover-actions">
-              <button className="cover-action" onClick={() => go('roles')}>Choose your role <span aria-hidden="true">↓</span></button>
-              <button className="cover-action cover-secondary" onClick={() => go('overview')}>View outcomes <span aria-hidden="true">→</span></button>
+              <button className="cover-action" onClick={() => go('overview')}>Follow the financial story <span aria-hidden="true">↓</span></button>
+              <button className="cover-action cover-secondary" onClick={() => go('roles')}>Choose your role <span aria-hidden="true">→</span></button>
             </div>
           </div>
           <div className="cover-art" aria-hidden="true"><div className="record"/><img className="cover-mascot" src="varsity-bear.webp" alt="" width="760" height="760" fetchpriority="high"/></div>
@@ -235,14 +247,8 @@ export default function App() {
               ]}
             />
           </Card>
-          <Card title="How to read this dashboard" takeaway="Use the sections above to compare outcomes and try an outreach rule.">
-            <ol className="howto">
-              <li><b>Filters</b> change the cohort used for the charts. Recommendations refer to the full study.</li>
-              <li><b>Hover or tap</b> any bar, bubble, or cell to see counts, rates, and the 95% interval.</li>
-              <li><b>Table</b> switches any chart to its underlying numbers for screen readers or export.</li>
-              <li><b>Faded bars and ⚠</b> mark groups under 30 students, where the rates are unstable.</li>
-              <li>These are <b>associations, not causes</b>. See Methods for the limitations.</li>
-            </ol>
+          <Card title="Financial strain and student dropout" takeaway="Which students could benefit from a financial aid conversation? Start with tuition, then compare debt and scholarship outcomes.">
+            <button className="btn-ghost" onClick={() => go('money')}>Compare financial outcomes →</button>
           </Card>
         </Section>
 
@@ -254,25 +260,25 @@ export default function App() {
             title="Dropout rate by tuition status"
             takeaway={G.tuition[0].n && G.tuition[1].n ? `Students behind on tuition dropped out at ${pct(G.tuition[0].dropRate)} compared with ${pct(G.tuition[1].dropRate)} for students whose tuition was current.` : 'Not enough students in both groups for this selection.'}
             table={{ rows: G.tuition, cols: [...rateCols('Tuition status'), { k: 'share', h: 'Share of dropouts', num: true, f: (r) => S.dropouts ? pct(r.share) : '—' }] }}
-            note={S.dropouts ? `${num(G.tuition[1].dropouts)} of ${num(S.dropouts)} recorded departures in this selection had current tuition. A payment-only rule would miss those students.` : 'This selection has no recorded departures. Coverage cannot be calculated.'}
+            note={S.dropouts ? `${num(G.tuition[1].dropouts)} of ${num(S.dropouts)} recorded departures in this selection (${pct(G.tuition[1].share)}) had current tuition. A payment-only rule would miss those students.` : 'This selection has no recorded departures. Coverage cannot be calculated.'}
           >
             <RateBars rows={G.tuition} overall={S.dropRate} max={tuitionMax} showShare />
           </Card>
           <Card
-            title="Outcomes by scholarship status"
-            takeaway={G.scholar[0].n && G.scholar[1].n ? `${pct(G.scholar[0].dropRate)} of scholarship holders dropped out, compared with ${pct(G.scholar[1].dropRate)} of other students.` : ''}
-            table={{ rows: G.scholar, cols: rateCols('Scholarship') }}
-            note="Scholarships may go to students who were already stronger, so this difference does not show that scholarships cause students to stay."
-          >
-            <StackedOutcomes rows={G.scholar} colors={OUTCOME_COLORS} names={OUTCOME_NAMES} />
-          </Card>
-          <Card
             title="Dropout rate by debtor status"
-            takeaway={G.debtor[0].n && G.debtor[1].n ? `Students with outstanding debt dropped out at ${pct(G.debtor[0].dropRate)}, compared with ${pct(G.debtor[1].dropRate)}.` : ''}
+            takeaway={G.debtor[0].n && G.debtor[1].n ? `Students with outstanding debt dropped out at ${pct(G.debtor[0].dropRate)}, compared with ${pct(G.debtor[1].dropRate)} among students without recorded debt.` : ''}
             table={{ rows: G.debtor, cols: rateCols('Debtor') }}
-            note="Debtor and tuition status are separate fields and should not be merged."
+            note="Financial aid can check outstanding balances even when tuition is current. Offer a payment-plan or emergency-aid consultation and ask advising to follow up with the student’s permission."
           >
             <RateBars rows={G.debtor} overall={S.dropRate} />
+          </Card>
+          <Card
+            title="Outcomes by scholarship status"
+            takeaway={G.scholar[0].n && G.scholar[1].n ? `${pct(G.scholar[0].dropRate)} of scholarship holders dropped out, compared with ${pct(G.scholar[1].dropRate)} of students without a scholarship. Graduation rates were ${pct(G.scholar[0].gradRate)} and ${pct(G.scholar[1].gradRate)}, respectively.` : ''}
+            table={{ rows: G.scholar, cols: [...rateCols('Scholarship'), { k: 'enrRate', h: 'Still enrolled %', num: true, f: r => r.n ? pct(r.enrRate) : '–' }] }}
+            note="Financial aid can review who qualifies, who applies, and where applications stall. Differences in eligibility and prior achievement may contribute to the observed gap."
+          >
+            <StackedOutcomes rows={G.scholar} colors={OUTCOME_COLORS} names={OUTCOME_NAMES} />
           </Card>
           <Card
             wide
@@ -282,9 +288,14 @@ export default function App() {
           >
             <Heatmap overall={S.dropRate} rowTitle="Tuition" colTitle="Scholarship" rowLabels={G.tRows.map((r) => r[1])} colLabels={G.scCols.map((c) => c[1])} cells={G.heatTS} />
           </Card>
+          <Card wide title="Use a missed payment to offer support" takeaway="Financial aid can contact a student within weeks of a missed payment, offer a payment plan or emergency aid, and review whether they qualify for scholarships. Confirm locally when payment records become available.">
+            <p>For students whose payments are current, advisors have another checkpoint once first-semester results arrive.</p>
+            <button className="btn-ghost" onClick={() => go('academic')}>Explore first-semester progress →</button>
+          </Card>
         </Section>
 
-        <Section id="academic" kicker="04 · Closing the gap" title="How does first-term progress relate to dropout?" intro="After the first semester, advisors can compare students by the share of enrolled units they passed. Students with no enrolled units form a separate group.">
+        <Section id="academic" kicker="04 · Closing the gap" title="How does first-term progress relate to dropout?" intro={lowPassGroup.n && higherPassGroup.n ? `Among students who passed under half their first-term units, ${pct(lowPassGroup.dropRate)} dropped out, compared with ${pct(higherPassGroup.dropRate)} among those who passed at least half. Students with no enrolled units are shown separately.` : "Compare first-term progress after grades are available. Students with no enrolled units are shown separately."}>
+          <div className="wide"><OutreachComparison tuition={G.tuition[0]} additional={G.heatTP[1][0]} summary={S}/></div>
           <Card
             wide
             title="Dropout rate by share of 1st-semester courses passed"
@@ -329,8 +340,8 @@ export default function App() {
           </Card>
         </Section>
 
-        <Section id="alert" kicker="05 · Interactive" title="Build your own early-alert list" intro="Pick the signs your office would act on. The meters show how many students you would contact, what share of recorded dropouts met the rule, and what share of the selected group dropped out. The filters at the top still apply.">
-          <Card wide title="Early-alert builder" takeaway="Select a second sign to see which additional students meet the rule. Students who meet several signs count once.">
+        <Section id="alert" kicker="05 · Interactive" title="Plan retention outreach" intro="Compare ways to offer help before students leave. The figures show whom each plan would have reached in the historical cohort. Prevented departures and tuition savings were not measured.">
+          <Card wide title="Compare outreach plans">
             <FlagBuilder students={list} />
           </Card>
         </Section>
@@ -362,14 +373,15 @@ export default function App() {
           <Card title="Admission grade (fifths of all students)" takeaway={G.adm[0].n && G.adm[4].n ? `Dropout was ${pct(G.adm[0].dropRate)} in the lowest admission-grade band and ${pct(G.adm[4].dropRate)} in the highest.` : 'Grade cutoffs come from the full study and stay fixed when you filter.' } table={{ rows: G.adm, cols: rateCols('Admission grade') }}>
             <Columns rows={G.adm} overall={S.dropRate} xLabel="Admission grade quintile (low → high)" />
           </Card>
-          <Card title="Unemployment rate when the student enrolled" takeaway="Each bar groups students by the national unemployment rate in their enrollment year." table={{ rows: G.unemp, cols: rateCols('Unemployment') }} note="Each value is one enrollment cohort's national rate, so this compares cohorts rather than individual students.">
-            <Columns rows={G.unemp} overall={S.dropRate} xLabel="Portugal unemployment rate at enrollment" />
+          <Card title="Does dropout rise with national unemployment?" takeaway="Across the full study, dropout fluctuated as Portugal’s unemployment rate rose. At 7.6% unemployment, 35.4% of students left. At 12.4%, 24.0% left. At 16.2%, 38.4% left." table={{ rows: G.unemp, cols: rateCols('National unemployment at entry') }} note="Use these rows to compare enrollment conditions. The national rate describes the economy when a student enrolled. Individual employment status was not measured here.">
+            <DropoutComparison rows={G.unemp} label="National unemployment at entry" />
           </Card>
-          <Card title="Marital status" takeaway="Use the age-at-enrollment filter to compare marital groups within the same age band." table={{ rows: G.marital, cols: rateCols('Marital status') }}>
-            <RateBars rows={G.marital} overall={S.dropRate} />
+          <Card title="Marital status: rate and reach" takeaway={G.marital[0].n && G.marital[1].n ? `In this selection, ${pct(G.marital[0].dropRate)} of single students and ${pct(G.marital[1].dropRate)} of married students left. That represents ${num(G.marital[0].dropouts)} and ${num(G.marital[1].dropouts)} departures, respectively.` : 'Compare departures with the number of students in each group. A dash means no students in this selection.'} table={{ rows: G.marital, cols: rateCols('Marital status') }} note="Use the age filter to check whether the pattern persists among students of similar ages. Small groups can swing sharply: in the full study, one student accounts for 25 percentage points in the widowed group.">
+            <DropoutComparison rows={G.marital} label="Marital status" />
           </Card>
-          <Card title="Small groups: special needs and international" takeaway="Read each rate alongside its student count. A single departure changes the percentage more in a smaller group." table={{ rows: [...G.special, ...G.intl], cols: rateCols('Group') }}>
-            <RateBars rows={[...G.special, ...G.intl]} overall={S.dropRate} />
+          <Card title="Do these groups stand out for dropout?" takeaway="In the full study, both comparisons were close: 33.3% versus 32.1% by recorded educational needs, and 29.1% versus 32.2% by international status. These differences offer little basis on their own for prioritizing outreach." note="The same student appears once in each comparison. Small samples limit precision; ask students directly what support they need." table={{ rows: [...G.special, ...G.intl], cols: rateCols('Group') }}>
+            <DropoutComparison rows={G.special} label="Educational needs" />
+            <DropoutComparison rows={G.intl} label="International status" />
           </Card>
         </Section>
 
@@ -381,7 +393,7 @@ export default function App() {
               ['1', 'Check when payment information becomes available', `Ask billing staff when a missed payment can first trigger an offer of help. In the full cohort, ${pct(H.t[0].dropRate, 0)} of students behind on tuition dropped out.`, 'Financial aid + advising'],
               ['2', 'Offer payment plans and emergency aid early', `Students with debt dropped out at ${pct(H.d[0].dropRate, 0)} and those without at ${pct(H.d[1].dropRate, 0)}. Ask students which payment options would have been useful.`, 'Bursar · Financial aid'],
               ['3', 'Review scholarship reach', `Scholarship holders dropped out at ${pct(H.sc[0].dropRate, 0)}, compared with ${pct(H.sc[1].dropRate, 0)} for others. Check whether more at-risk students could qualify, and test this with a pilot. Do not assume the scholarships caused the gap.`, 'Enrollment management'],
-              ['4', 'Add a first-semester academic check-in', 'Most dropouts paid their tuition. Students who passed under half of their first-semester courses dropped out at 84.8%. Flag them for advising before the second term.', 'Advising · Student success'],
+              ['4', 'Keep advising open to students with current tuition', 'Offer a self-referral route. Ask what costs are getting in the way, arrange a financial aid introduction with permission, and check whether the student received support.', 'Advising · Student success'],
             ].map(([n, t, d, o]) => (
               <div className="rec reveal in" key={n}>
                 <div className="rec-n">{n}</div>

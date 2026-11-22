@@ -40,8 +40,10 @@ function useTip() {
   const wrap = useRef(null);
   const show = (e, content) => {
     const r = wrap.current.getBoundingClientRect();
-    const x = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
-    const y = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
+    const anchor = e.currentTarget.getBoundingClientRect();
+    const pointer = e.touches?.[0] || e;
+    const x = (pointer.clientX ?? anchor.left + anchor.width / 2) - r.left;
+    const y = (pointer.clientY ?? anchor.top + anchor.height / 2) - r.top;
     setTip({ x, y, content, flip: x > r.width * 0.6 });
   };
   const hide = () => setTip(null);
@@ -164,6 +166,9 @@ export function RateBars({ rows, overall, max = 1, showShare = false, onSelect, 
           <div
             className={`rb-row${onSelect ? ' clickable' : ''}${selected === d.key ? ' sel' : ''}${small ? ' small' : ''}`}
             key={`${i}-${d.key}`}
+            onFocus={(e) => show(e, tip)}
+            onBlur={hide}
+            onKeyDown={(e) => { if (e.key === 'Escape') hide(); }}
             onMouseMove={(e) => show(e, tip)}
             onMouseLeave={hide}
             onClick={(e) => (onSelect ? onSelect(d.key) : show(e, tip))}
@@ -225,6 +230,9 @@ export function Columns({ rows, max = 1, overall, xLabel }) {
             <div
               className="col"
               key={d.key}
+              onFocus={(e) => show(e, tip)}
+              onBlur={hide}
+              onKeyDown={(e) => { if (e.key === 'Escape') hide(); }}
               onMouseMove={(e) => show(e, tip)}
               onMouseLeave={hide}
               onClick={(e) => show(e, tip)}
@@ -330,6 +338,9 @@ export function Heatmap({ rowLabels, colLabels, cells, rowTitle, colTitle, overa
                     opacity: inView ? 1 : 0,
                     transitionDelay: `${(ri * colLabels.length + ci) * 50}ms`,
                   }}
+                  onFocus={(e) => show(e, tip)}
+                  onBlur={hide}
+                  onKeyDown={(e) => { if (e.key === 'Escape') hide(); }}
                   onMouseMove={(e) => show(e, tip)}
                   onMouseLeave={hide}
                   onClick={(e) => show(e, tip)}

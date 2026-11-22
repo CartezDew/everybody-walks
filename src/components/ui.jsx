@@ -40,10 +40,24 @@ export function CountUp({ value, format, duration = 1100 }) {
 }
 
 export function Kpi({ label, value, format, sub, accent, icon, featured = false }) {
+  const [ref, inView] = useInView({ threshold: 0.25 });
   return (
-    <div className={featured ? 'kpi kpi-featured' : 'kpi'} style={{ '--accent': accent }}>
+    <div ref={featured ? ref : undefined} className={featured ? `kpi kpi-featured kpi-${featured}${inView ? ' kpi-entered' : ''}` : 'kpi'} style={{ '--accent': accent, '--share': featured ? value : undefined }}>
       <div className="kpi-label">{icon}{label}</div>
       <div className="kpi-value">{featured ? format(value) : <CountUp value={value} format={format} />}</div>
+      {featured && <svg className="outcome-glyph" viewBox="0 0 48 48" aria-hidden="true">
+        {featured === 'graduation' ? <>
+          <circle className="glyph-track" cx="24" cy="24" r="18" />
+          <circle className="glyph-arc" cx="24" cy="24" r="18" pathLength="1" strokeDasharray={value + ' 1'} transform="rotate(-90 24 24)" />
+        </> : Array.from({ length: 25 }, (_, i) => (
+          <g key={i} transform={`translate(${2 + i % 5 * 9} ${1 + Math.floor(i / 5) * 9})`}>
+            <g className={i < Math.round(value * 25) ? 'glyph-student active' : 'glyph-student'} style={{ '--order': i }}>
+              <circle cx="4" cy="2" r="1.8" />
+              <path d="M.5 8.5v-1a3.5 3.5 0 0 1 7 0v1z" />
+            </g>
+          </g>
+        ))}
+      </svg>}
       {sub && <div className="kpi-sub">{sub}</div>}
     </div>
   );
