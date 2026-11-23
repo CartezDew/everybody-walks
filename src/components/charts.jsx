@@ -21,7 +21,7 @@ export function useInView(options = { threshold: 0.2 }) {
   return [ref, inView];
 }
 
-function useWidth() {
+export function useWidth() {
   const ref = useRef(null);
   const [w, setW] = useState(600);
   useLayoutEffect(() => {
@@ -35,7 +35,7 @@ function useWidth() {
 }
 
 // Tooltip that follows the pointer within a relative container.
-function useTip() {
+export function useTip() {
   const [tip, setTip] = useState(null);
   const wrap = useRef(null);
   const show = (e, content) => {
@@ -74,7 +74,7 @@ export function TipBody({ title, rows, warn }) {
   );
 }
 
-const statRows = (d) => !d.n ? [['Students', '0'], ['Dropout rate', 'No students in this group']] : [
+export const statRows = (d) => !d.n ? [['Students', '0'], ['Dropout rate', 'No students in this group']] : [
   ['Students', num(d.n)],
   ['Dropouts', num(d.dropouts)],
   ['Dropout rate', pct(d.dropRate)],

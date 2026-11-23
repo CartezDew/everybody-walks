@@ -2,6 +2,14 @@ import Select from './FilterSelect';
 import { useEffect, useRef, useState } from 'react';
 import { DataTable } from './charts.jsx';
 import { useInView } from './charts.jsx';
+import FootTrail from './FootTrail.jsx';
+
+// Where each section's footstep trail walks (shape + placement).
+export const TRAILS = {
+  overview: ['rise', 'ft-right'], demographics: ['wander', 'ft-right'], money: ['sweep', 'ft-right'],
+  academic: ['rise', 'ft-right'], alert: ['wander', 'ft-right'], who: ['sweep', 'ft-right'],
+  more: ['rise', 'ft-right'], insights: ['wander', 'ft-right'], act: ['rise', 'ft-right'],
+};
 
 export function Logo({ size = 40 }) {
   return <img className="logo-mark" src="bear-head.png" width={size} height={size} alt="" />;
@@ -90,7 +98,8 @@ export function Card({ title, takeaway, children, table, note, wide, id }) {
 export function Section({ id, kicker, title, intro, children }) {
   const [ref, inView] = useInView({ threshold: 0.05 });
   return (
-    <section id={id} className="section" aria-labelledby={`${id}-h`}>
+    <section id={id} className={`section${TRAILS[id] ? ' has-trail' : ''}`} aria-labelledby={`${id}-h`}>
+      {TRAILS[id] && <FootTrail shape={TRAILS[id][0]} className={TRAILS[id][1]} />}
       <div className={`section-head reveal${inView ? ' in' : ''}`} ref={ref}>
         {kicker && <div className="kicker">{kicker}</div>}
         <h2 id={`${id}-h`}>{title}</h2>

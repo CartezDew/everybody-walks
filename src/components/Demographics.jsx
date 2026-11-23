@@ -1,5 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useInView } from './charts';
+import FootTrail from './FootTrail.jsx';
+import { TRAILS } from './ui.jsx';
 import { AGE_GROUPS, applyFilters, groupRates, num, pct } from '../lib/data.js';
 
 const CHARTS = [
@@ -95,7 +97,8 @@ function DemographicChart({ config, students, filters, setFilters }) {
 
 export default function Demographics({ students, filters, setFilters }) {
   const [expanded, setExpanded] = useState(false);
-  return <section id="demographics" className="section" aria-labelledby="demographics-h">
+  return <section id="demographics" className="section has-trail" aria-labelledby="demographics-h">
+    <FootTrail shape={TRAILS.demographics[0]} className={TRAILS.demographics[1]} />
     <div className="section-head">
       <div className="kicker">02 · Explore the cohort</div>
       <h2 id="demographics-h">Demographics and student circumstances</h2>

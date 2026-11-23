@@ -142,7 +142,7 @@
 @media(max-width:410px){.sleeve h1{width:calc(100% + 38px);font-size:40px}.cover-art .record{top:auto;bottom:8%;transform:translateX(-50%)}}
 
 /* Footprints mark transitions within the reports. */
-.decision-grid::after, #academic::before, .recs::after {
+.decision-grid::after, #academic::before {
   content: '';
   display: block;
   pointer-events: none;

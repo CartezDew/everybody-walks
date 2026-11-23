@@ -9,7 +9,9 @@ import { RolePicker, Workspace, OutreachComparison } from './components/Workspac
 import FlagBuilder from './components/FlagBuilder.jsx';
 import ExplorerNav from './components/ExplorerNav';
 import AIInsights from './components/AIInsights';
+import Recommendations from './components/Recommendations.jsx';
 import Demographics from './components/Demographics';
+import { UnemploymentChart, RateReachRows, Verdict, unempVerdict, maritalVerdict, gapVerdict } from './components/SignalCharts.jsx';
 
 const OUTCOME_COLORS = ['var(--drop)', 'var(--enr)', 'var(--grad)'];
 const OUTCOME_NAMES = ['Dropout', 'Enrolled', 'Graduate'];
@@ -30,16 +32,6 @@ const cell = (list, f) => {
   const s = summarize(list.filter(f));
   return s;
 };
-
-function DropoutComparison({ rows, label }) {
-  return <table className="context-comparison">
-    <thead><tr><th scope="col">{label}</th><th scope="col">Left / students</th><th scope="col">Dropout rate</th></tr></thead>
-    <tbody>{rows.map(row => <tr key={row.key}>
-      <th scope="row">{row.label}</th><td>{num(row.dropouts)} / {num(row.n)}</td>
-      <td><b>{row.n ? pct(row.dropRate) : '—'}</b><span className="context-track" aria-hidden="true"><i style={{width: pct(row.dropRate)}} /></span></td>
-    </tr>)}</tbody>
-  </table>;
-}
 
 function DatasetLinks() {
   return <div className="dataset-links">
@@ -126,7 +118,10 @@ export default function App() {
     return { tuition, debtor, scholar, bands, bands2, age, gender, attend, displaced, courses, coursesAll, app, marital, special, intl, adm, unemp, heatTS, heatTP, traj, grades, tRows, scCols, pCols };
   }, [list, filters]);
 
-  const lowPassGroup = summarize(list.filter(s => s.pass1 !== null && s.pass1 < 0.5));
+  const VU = unempVerdict(G.unemp);
+  const VM = maritalVerdict(G.marital, S.dropRate);
+  const VG = gapVerdict([{ title: 'Educational needs', rows: G.special }, { title: 'International status', rows: G.intl }]);
+  const lowPassGroup =summarize(list.filter(s => s.pass1 !== null && s.pass1 < 0.5));
   const higherPassGroup = summarize(list.filter(s => s.pass1 !== null && s.pass1 >= 0.5));
   const tuitionMax = 1;
   const [role, setRole] = useState('leadership');
@@ -204,7 +199,7 @@ export default function App() {
               <p className="cover-lede">Where could financial aid and advising make a difference?</p>
             </div>
             <div className="cover-actions">
-              <button className="cover-action" onClick={() => go('overview')}>Follow the financial story <span aria-hidden="true">↓</span></button>
+              <button className="cover-action" onClick={() => go('overview')}>See who’s at risk <span aria-hidden="true">↓</span></button>
               <button className="cover-action cover-secondary" onClick={() => go('roles')}>Choose your role <span aria-hidden="true">→</span></button>
             </div>
           </div>
@@ -340,10 +335,10 @@ export default function App() {
           </Card>
         </Section>
 
-        <Section id="alert" kicker="05 · Interactive" title="Plan retention outreach" intro="Compare ways to offer help before students leave. The figures show whom each plan would have reached in the historical cohort. Prevented departures and tuition savings were not measured.">
-          <Card wide title="Compare outreach plans">
+        <Section id="alert" kicker="05 · Interactive" title="Plan retention outreach" intro="Pick the signs that put a student on the outreach list, then see who it would reach.">
+          <article className="card wide sim-card">
             <FlagBuilder students={list} />
-          </Card>
+          </article>
         </Section>
 
         <Section id="who" kicker="06 · Drill down" title="Who is leaving, and from which programs?" intro="Dropout is not spread evenly. Use rates and counts together: a small program with a high rate and a large program with a modest rate can both need attention.">
@@ -373,37 +368,23 @@ export default function App() {
           <Card title="Admission grade (fifths of all students)" takeaway={G.adm[0].n && G.adm[4].n ? `Dropout was ${pct(G.adm[0].dropRate)} in the lowest admission-grade band and ${pct(G.adm[4].dropRate)} in the highest.` : 'Grade cutoffs come from the full study and stay fixed when you filter.' } table={{ rows: G.adm, cols: rateCols('Admission grade') }}>
             <Columns rows={G.adm} overall={S.dropRate} xLabel="Admission grade quintile (low → high)" />
           </Card>
-          <Card title="Does dropout rise with national unemployment?" takeaway="Across the full study, dropout fluctuated as Portugal’s unemployment rate rose. At 7.6% unemployment, 35.4% of students left. At 12.4%, 24.0% left. At 16.2%, 38.4% left." table={{ rows: G.unemp, cols: rateCols('National unemployment at entry') }} note="Use these rows to compare enrollment conditions. The national rate describes the economy when a student enrolled. Individual employment status was not measured here.">
-            <DropoutComparison rows={G.unemp} label="National unemployment at entry" />
+          <Card title="Does the economy predict who leaves?" takeaway={VU.text} table={{ rows: G.unemp, cols: rateCols('National unemployment at entry') }} note="Each dot is a group of students who enrolled when Portugal’s national unemployment rate was at that level. It describes the economy at entry, not whether a student had a job. Hover or tab through the dots for counts.">
+            <Verdict {...VU} />
+            <UnemploymentChart rows={G.unemp} overall={S.dropRate} />
           </Card>
-          <Card title="Marital status: rate and reach" takeaway={G.marital[0].n && G.marital[1].n ? `In this selection, ${pct(G.marital[0].dropRate)} of single students and ${pct(G.marital[1].dropRate)} of married students left. That represents ${num(G.marital[0].dropouts)} and ${num(G.marital[1].dropouts)} departures, respectively.` : 'Compare departures with the number of students in each group. A dash means no students in this selection.'} table={{ rows: G.marital, cols: rateCols('Marital status') }} note="Use the age filter to check whether the pattern persists among students of similar ages. Small groups can swing sharply: in the full study, one student accounts for 25 percentage points in the widowed group.">
-            <DropoutComparison rows={G.marital} label="Marital status" />
+          <Card wide title="Marital status: who leaves most often vs. who makes up most departures" takeaway={VM.text} table={{ rows: G.marital, cols: rateCols('Marital status') }} note="Read the dot for risk within a group and the bar for its share of all departures. Married students are older on average, so use the age filter to check whether the gap holds among students of similar ages.">
+            <Verdict {...VM} />
+            <RateReachRows sections={[{ rows: G.marital }]} overall={S.dropRate} />
           </Card>
-          <Card title="Do these groups stand out for dropout?" takeaway="In the full study, both comparisons were close: 33.3% versus 32.1% by recorded educational needs, and 29.1% versus 32.2% by international status. These differences offer little basis on their own for prioritizing outreach." note="The same student appears once in each comparison. Small samples limit precision; ask students directly what support they need." table={{ rows: [...G.special, ...G.intl], cols: rateCols('Group') }}>
-            <DropoutComparison rows={G.special} label="Educational needs" />
-            <DropoutComparison rows={G.intl} label="International status" />
+          <Card wide title="Do smaller student groups stand out?" takeaway={VG.text} note="Each student appears once in each comparison. Wide bands mean few students, so a single departure moves the rate. Ask students directly what support they need." table={{ rows: [...G.special, ...G.intl], cols: rateCols('Group') }}>
+            <Verdict {...VG} />
+            <RateReachRows sections={[{ title: 'Educational needs', rows: G.special }, { title: 'International status', rows: G.intl }]} overall={S.dropRate} reach={false} />
           </Card>
         </Section>
 
         </>}
         <AIInsights students={list}/>
-        <Section id="act" kicker="08 · What to do" title="Recommendations" intro="These suggestions use the full study cohort, across all filter settings. A campus pilot would be needed to learn whether outreach helps.">
-          <div className="recs wide">
-            {[
-              ['1', 'Check when payment information becomes available', `Ask billing staff when a missed payment can first trigger an offer of help. In the full cohort, ${pct(H.t[0].dropRate, 0)} of students behind on tuition dropped out.`, 'Financial aid + advising'],
-              ['2', 'Offer payment plans and emergency aid early', `Students with debt dropped out at ${pct(H.d[0].dropRate, 0)} and those without at ${pct(H.d[1].dropRate, 0)}. Ask students which payment options would have been useful.`, 'Bursar · Financial aid'],
-              ['3', 'Review scholarship reach', `Scholarship holders dropped out at ${pct(H.sc[0].dropRate, 0)}, compared with ${pct(H.sc[1].dropRate, 0)} for others. Check whether more at-risk students could qualify, and test this with a pilot. Do not assume the scholarships caused the gap.`, 'Enrollment management'],
-              ['4', 'Keep advising open to students with current tuition', 'Offer a self-referral route. Ask what costs are getting in the way, arrange a financial aid introduction with permission, and check whether the student received support.', 'Advising · Student success'],
-            ].map(([n, t, d, o]) => (
-              <div className="rec reveal in" key={n}>
-                <div className="rec-n">{n}</div>
-                <h3>{t}</h3>
-                <p>{d}</p>
-                <span className="rec-o">{o}</span>
-              </div>
-            ))}
-          </div>
-        </Section>
+        <Recommendations />
 
         <Section id="methods" kicker="09 · Transparency" title="Data, methods, and limitations">
           <div className="wide"><DatasetLinks/></div>
@@ -431,15 +412,14 @@ export default function App() {
               <li>The data does not say when tuition status was recorded. Some students may have stopped paying because they were already leaving.</li>
               <li>Semester results are not known at enrollment, so these signs apply after the first semester, not at admission.</li>
               <li>'Enrolled' is an unresolved status, not a future graduation. The 50% pass threshold is exploratory, not an institutional standard.</li>
-              <li>Nationality and parent education/occupation remain numeric codes and are not analyzed here.</li>
+              <li>Nationality and parent occupation remain numeric codes and are not analyzed here. Parent education is used only to mark first-generation students in AI Insights.</li>
             </ul>
           </Card>
           <Card title="Behind Everyone Walks" takeaway="Everyone Walks is our nod to Jesus Walks and Graduation Day on The College Dropout. For a student, walking means crossing the graduation stage. We built this dashboard around the check-ins that can happen along the way.">
             <ul className="plain">
               <li><b>Merachew Gebremariam:</b> topic, proposal, number verification, poster text.</li>
-              <li><b>Cartez Dewberry:</b> project plan, dashboard design and build, poster production.</li>
+              <li><b>Cartez Dewberry:</b> project plan, dashboard design and build.</li>
               <li><b>Carson Johnston:</b> decoded dataset, presentation, review and submission.</li>
-              <li><b>AI disclosure:</b> The team used AI assistance for coding, illustrations and the comparisons in AI Insights. Your browser calculates the counts and rates from the selected cohort. The suggested pilots have not been tested in this study.</li>
             </ul>
           </Card>
         </Section>

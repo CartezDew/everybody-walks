@@ -1,0 +1,22 @@
+/* Footstep trails walking toward a graduation cap, behind section content */
+.has-trail { position: relative; isolation: isolate; overflow-x: clip; }
+.foot-trail { position: absolute; z-index: -1; pointer-events: none; color: var(--comparison); fill: currentColor; width: clamp(220px, 30vw, 430px); height: auto; opacity: .28; overflow: visible; }
+.ft-step, .ft-cap { opacity: 0; transform-box: fill-box; }
+.foot-trail.walk .ft-step { animation: ft-step .45s ease forwards; animation-delay: calc(var(--i) * 140ms); }
+.foot-trail.walk .ft-cap { animation: ft-cap .6s cubic-bezier(.3,1.5,.5,1) forwards; animation-delay: calc(var(--i) * 140ms + 100ms); }
+.ft-cap { color: var(--gold); fill: var(--gold); }
+@keyframes ft-step { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ft-cap { from { opacity: 0; scale: .4; } to { opacity: 1; scale: 1; } }
+
+/* placements */
+.ft-right { right: 0; top: 34px; }
+
+@media (prefers-color-scheme: dark) { :root:not([data-theme='light']) .foot-trail { opacity: .34; } }
+:root[data-theme='dark'] .foot-trail { opacity: .34; }
+/* Narrow screens: the heading fills the width, so the trail tucks above it, smaller and fainter */
+@media (max-width: 1100px) { .foot-trail { width: clamp(180px, 34vw, 300px); top: 14px; opacity: .2; } }
+@media (max-width: 600px) { .foot-trail { width: 170px; top: 6px; opacity: .16; } }
+@media (prefers-reduced-motion: reduce) {
+  .ft-step, .ft-cap { opacity: 1; animation: none !important; }
+}
+@media print, (forced-colors: active) { .foot-trail { display: none; } }

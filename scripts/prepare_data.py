@@ -23,7 +23,10 @@ yn = lambda v: 1 if v == "Yes" else 0
 targets = ["Dropout", "Enrolled", "Graduate"]
 fields = ["course","evening","male","age","scholar","debtor","tuitionOk","intl","displaced",
           "special","marital","appMode","admGrade","prevGrade","e1","a1","g1","e2","a2","g2",
-          "unemp","infl","gdp","target"]
+          "unemp","infl","gdp","target","ev1","appOrder","firstGen","cred1"]
+# Parent qualification codes that denote any higher-education degree (UCI codebook)
+HIGHER_ED = {2, 3, 4, 5, 6, 40, 41, 42, 43, 44}
+first_gen = lambda d: 0 if int(d["Mother's qualification"]) in HIGHER_ED or int(d["Father's qualification"]) in HIGHER_ED else 1
 out = []
 for d in data:
     out.append([
@@ -38,6 +41,8 @@ for d in data:
         d["Curricular units 2nd sem (enrolled)"], d["Curricular units 2nd sem (approved)"],
         round(d["Curricular units 2nd sem (grade)"], 2),
         d["Unemployment rate"], d["Inflation rate"], d["GDP"], targets.index(d["Target"]),
+        d["Curricular units 1st sem (evaluations)"], d["Application order"], first_gen(d),
+        d["Curricular units 1st sem (credited)"],
     ])
 json.dump({"fields": fields, "dims": dims, "targets": targets, "rows": out},
           open(os.path.join(root, "src/data/students.json"), "w"), separators=(",", ":"))

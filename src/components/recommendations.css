@@ -1,0 +1,41 @@
+/* ===== Recommendations: priority tiers with icon cards ===== */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.rc-wrap { display: grid; gap: 26px; min-width: 0; }
+.rc-filter { display: flex; flex-wrap: wrap; gap: 6px; }
+.rc-filter button { border: 1px solid var(--border); background: var(--surface); color: var(--ink-2); padding: 7px 13px; border-radius: 999px; font-size: 13.5px; font-weight: 600; cursor: pointer; transition: background .15s, color .15s, border-color .15s; }
+.rc-filter button:hover { border-color: var(--comparison); color: var(--brand); }
+.rc-filter button[aria-pressed=true] { background: color-mix(in oklab, var(--gold) 22%, var(--surface)); border-color: color-mix(in oklab, var(--gold) 70%, var(--surface)); color: var(--ink); }
+
+.rc-tier { display: grid; gap: 14px; }
+.rc-tier-h { display: flex; gap: 14px; align-items: center; }
+.rc-tier-n { flex: none; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; font: 700 18px/1 Georgia, serif; color: var(--surface); background: var(--brand); }
+.rc-tier-n.p2 { background: var(--comparison); }
+.rc-tier-n.p3 { background: var(--surface-2); color: var(--brand); border: 1.5px solid var(--comparison); }
+.rc-tier-h h3 { font: 600 clamp(20px, 2vw, 24px)/1.15 Georgia, serif; color: var(--ink); }
+.rc-tier-h h3 small { font: 600 12px/1 var(--font); letter-spacing: .06em; text-transform: uppercase; color: var(--brand); background: var(--accent-bg); padding: 4px 8px; border-radius: 999px; margin-left: 8px; vertical-align: middle; }
+.rc-tier-h p { margin: 3px 0 0; color: var(--ink-2); font-size: 14px; }
+
+.rc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 290px), 1fr)); gap: 14px; }
+.rc-card { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 18px 18px 14px; display: flex; flex-direction: column; gap: 10px; min-width: 0;
+  box-shadow: var(--shadow); opacity: 0; transform: translateY(16px); transition: opacity .5s ease var(--d), transform .5s ease var(--d), box-shadow .2s, border-color .2s; }
+.rc-card.in { opacity: 1; transform: none; }
+.rc-card:hover { border-color: var(--comparison); box-shadow: 0 2px 4px rgba(0,0,0,.05), 0 16px 34px rgba(0,0,0,.1); }
+.rc-card.in:hover { transform: translateY(-3px); }
+.rc-p1 { border-top: 3px solid var(--brand); }
+.rc-p2 { border-top: 3px solid var(--comparison); }
+.rc-p3 { border-top: 3px solid var(--secondary-bar, var(--comparison)); }
+.rc-card h3 { display: flex; gap: 10px; align-items: flex-start; font-size: 16.5px; line-height: 1.3; color: var(--ink); }
+.rc-badge { flex: none; width: 30px; height: 30px; margin-top: -3px; border-radius: 8px; display: grid; place-items: center; background: var(--accent-bg); color: var(--brand); }
+.rc-badge .rc-icon { width: 17px; height: 17px; }
+.rc-stat { margin: 0; font-size: 13.5px; color: var(--ink-2); line-height: 1.45; }
+.rc-stat strong { font: 600 26px/1 Georgia, serif; color: var(--brand); font-variant-numeric: tabular-nums; letter-spacing: -.02em; margin-right: 4px; }
+.rc-action { margin: 0; font-size: 14px; color: var(--ink-2); line-height: 1.5; flex: 1; }
+.rc-meta { margin: 0; padding-top: 10px; border-top: 1px solid var(--grid); font-size: 12.5px; color: var(--muted); display: flex; flex-direction: column; gap: 2px; }
+.rc-meta b { color: var(--ink); font-weight: 600; }
+
+@media (max-width: 600px) {
+  .rc-tier-h { align-items: flex-start; }
+  .rc-tier-h h3 small { display: inline-block; margin: 6px 0 0; }
+}
+@media (prefers-reduced-motion: reduce) { .rc-card { opacity: 1; transform: none; transition: none; } }
+@media print { .rc-card { opacity: 1; transform: none; box-shadow: none; break-inside: avoid; } }
