@@ -271,6 +271,20 @@
   .cover-actions { grid-area: 2 / 1 / 3 / -1; padding: 0 0 18px; position: relative; z-index: 1; }
   .cover-actions .cover-action { gap: 6px; min-height: 42px; }
 }
+/* Under 400px: eyebrow and both hero buttons stay on one line each. */
+@media (max-width:400px) {
+  .cover-credit { white-space: nowrap; font-size: 8.5px; gap: 5px; letter-spacing: .04em; }
+  .cover-credit:before { width: 12px; flex: none; }
+  .cover-actions { flex-wrap: nowrap; gap: 8px; }
+  .cover-actions .cover-action { flex: 0 1 auto; min-width: 0; white-space: nowrap; padding: 8px 10px; font-size: 13px; gap: 5px; }
+}
+@media (max-width:360px) {
+  .cover-actions .cover-action { padding: 8px 9px; font-size: 12.5px; }
+}
+/* Small screens: leave room between the mascot and the hero buttons. */
+@media (max-width:610px) {
+  .cover-actions { padding-top: clamp(16px, 5vw, 26px); }
+}
 
 .landing-outcomes { max-width: 1240px; margin: 0 auto; padding: 24px clamp(18px,4vw,56px) 0; }
 .kpi { display: flex; flex-direction: column; justify-content: center; min-width: 0; }
